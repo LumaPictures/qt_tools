@@ -1,0 +1,42 @@
+<html>
+	<title>QT_PROOFSHEET example 2</title>
+	
+<body>
+		<hr>
+		<p>QT_PROOFSHEET example 2:</p>
+		<p>Here's an interesting little movie. It happens to be the <i>first digitally-rendered QuickTime movie <b>ever</b></i>. It was rendered using a two-dimensional graphics package called &quot;Skia&quot;, also known as &quot;QuickDraw GX&quot;.</p>
+		<p><object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B" codebase="http://www.apple.com/qtactivex/qtplugin.cab" height="256" width="256">
+				<param name="loop" value="true">
+				<param name="src" value="images/sweepsmall.mov">
+				<param name="autoplay" value="true">
+				<param name="controller" value="false">
+				<embed height="256" pluginspage="http://www.apple.com/quicktime/download/" src="images/sweepsmall.mov" type="video/quicktime" width="256" controller="false" autoplay="true" loop="true">
+			</object></p>
+		<p>And here, we will transform it into a 64-frame 512x512 texture for use in Second Life. Because I know the source movie is 2 seconds long, and we want 64 frames to result, we can use --framerate=32 to divide the whole movie appropriately. Also, we disable spacing, timecode stamping, and titling.</p>
+		<blockquote>
+			<pre>
+<font size="-2">poly@thunderbird-3: qt_proofsheet sweepsmall.mov --timecode=0 --spacing=0 --title=0 --framesize=64,64 --framesperrow=8 --framerate=32 sweep.tga<br>
+					+<br>
+					+                 frame size : 64 x 64 <br>
+					+                    spacing : 0 <br>
+					+                frame count : 64 <br>
+					+                 frames/row : 8 <br>
+					+                 sheet size : 512 x 512 <br>
+					+                      codec : tga  <br>
+					+          frames per second : 32 <br>
+					+                   duration : 2.000000 <br>
+					+<br>
+					................................................................<br>
+					<br>
+					poly@thunderbird-3:</font> <br>
+				 
+</pre>
+		</blockquote>
+		<p>Produced the following attractive proof sheet (converted to jpg):</p>
+		<blockquote>
+<img src="images/sweep.jpg" border="2"/>
+</blockquote>
+		<hr>
+		<p></p>
+	</body>
+</html>

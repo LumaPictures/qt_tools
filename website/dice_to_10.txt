@@ -1,0 +1,122 @@
+
+#
+# second-life audio dicer...
+# usage:  perl dice_to_10.pl --src=someSoundFile
+#
+
+use strict;
+
+# -------------------------------------
+# mp_new_opts(@ARGV)
+#
+# Given a list of arguments, return
+# a hash where the keys and values
+# are taken from those arguments of
+# the form "--key=value". The hyphens
+# disappear from the key name.
+#
+# A command line switch of "--key"
+# is equivalent to "--key=_".
+#
+# a special key named _argc contains
+# a count of non-dash-dash arguments,
+# and they are in the hash as {0}, {1},
+# and so on.
+#
+# |     in: array of arguments (such as @ARGV)
+# |
+# | return: reference to be accesed by mp_get_opt
+# |
+# | (no dispose routine needed)
+# |
+
+sub mp_new_opts
+  {
+  my $arg;
+  my $argVal;
+  my $argc;
+  my %hash;
+
+  $argc = 0;
+
+
+  while($arg = shift)
+    {
+    if($arg =~ /^--/)
+      {
+      if($arg =~ /^--(.*)\=(.*)$/)
+        {
+        $arg = $1;
+        $argVal = $2;
+        }
+      elsif($arg=~ /^--(.*)$/)
+        {
+        $arg = $1;
+        $argVal = "_";   # a true-but-zero value
+        }
+
+      $hash{$arg} = $argVal;
+      }
+    else
+      {
+      $hash{$argc++} = $arg;
+      }
+    }
+
+  $hash{_argc} = $argc;
+
+  return \%hash;
+  }
+
+
+sub main(@)
+{
+    my $args = mp_new_opts(@_);
+    my $src = $$args{src};
+
+    my $dst_base = $src;
+    if($dst_base =~ /^(.*)\..*$/)
+    {
+        $dst_base = $1;
+    }
+
+    print "src=$src, dst_base=$dst_base\n";
+    my $qt_info = `qt_info $src`;
+
+
+    my $dur = 0;
+    if($qt_info =~ /track duration : ([0-9.]+) /)
+    {
+        $dur = $1;
+    }
+    else
+    {
+        die "could not get info on $src\n";
+    }
+
+    my $t;
+    my $segSize = 10;
+    my $segNum = 0;
+    for($t = 0; $t < $dur; $t += $segSize)
+    {
+        $segNum++;
+        my $e = $t + $segSize;
+        if($e > $dur)
+        {
+            $e = $dur;
+        }
+
+        my $thisSegDur = $e - $t;
+        my $thisSegName = "${dst_base}_${segNum}_${thisSegDur}.wav";
+
+        system("qt_export $src --duration=$t,$e --audio=WAV $thisSegName");
+
+    }
+
+#track duration : 28.163 (16898/600)
+}
+
+
+main(@ARGV);
+
+
