@@ -41,8 +41,11 @@ void rationalize(double n,
 
     // the coefficients must be kept few, for though
     // the large fractions do become frightfully accurate
-    // in short order, the values do not fit in long longs!
-    #define N 20
+    // maximum number of coefficients. They're cheap, but really
+    // you can't use more than *maybe* a dozen before the denominator
+    // is crazy-big.
+
+    #define N 40
     long a[N];
 
     // we only work on positive inputs
@@ -52,13 +55,14 @@ void rationalize(double n,
     int i = 0; // go until N or no fraction left
 
     //printf("[%f] ",n);
-    while(n < 999999 && n > .000001 && i < N)
+    while(n != 0 && i < N)
     {
         double w = floor(n);
         //printf("<%f,%f> ",n,w);
         a[i++] = w;
         n -= w;
-        n = 1/n;
+        if(n != 0)
+            n = 1/n;
     }
 
     // the coefficients of the iterative fraction are in place,
@@ -153,6 +157,8 @@ int main(int argc,char **argv)
         printf("pi 355/113 ok\n");
     else
         printf("pi 355/113 ERROR\n");
+
+    tryRationalize(1000000000);
 }
 
 #endif // RATIONALIZE_TESTS
