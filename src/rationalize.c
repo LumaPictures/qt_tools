@@ -39,9 +39,7 @@ void rationalize(double n,
     if(denominatorMax == 0)
         denominatorMax = 1000000;
 
-    // the coefficients must be kept few, for though
-    // the large fractions do become frightfully accurate
-    // maximum number of coefficients. They're cheap, but really
+    // limit maximum number of coefficients. They're cheap, but really
     // you can't use more than *maybe* a dozen before the denominator
     // is crazy-big.
 
@@ -129,7 +127,42 @@ void tryRationalize(double n)
 
 int main(int argc,char **argv)
 {
-    printf("x\n");
+    if(argc == 2)
+    {
+        double n;
+        sscanf(argv[1],"%Lf",&n);
+        tryRationalize(n);
+        return 0;
+    }
+
+    if(argc == 3)
+    {
+        double num;
+        double den;
+        sscanf(argv[1],"%Lf",&num);
+        sscanf(argv[2],"%Lf",&den);
+        tryRationalize(num/den);
+        return 0;
+    }
+
+    if(argc == 5)
+    {
+        double num;
+        double den;
+        double maxNum;
+        double maxDen;
+        unsigned long long rNum;
+        unsigned long long rDen;
+        sscanf(argv[1],"%Lf",&num);
+        sscanf(argv[2],"%Lf",&den);
+        sscanf(argv[3],"%Lf",&maxNum);
+        sscanf(argv[4],"%Lf",&maxDen);
+        rationalize(num/den,maxNum,maxDen,&rNum,&rDen);
+
+        printf("%f --> %lld/%lld (%f)\n",num/den,rNum,rDen,(double)rNum/(double)rDen);
+
+        return 0;
+    }
 
     tryRationalize(29.97);
     tryRationalize(.423423423423423);
