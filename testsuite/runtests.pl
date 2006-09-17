@@ -295,6 +295,32 @@ sub test6
 	assertEq("movie_box","(0,0,256,256)",$$qtInfo{movie_box});
 }
 
+sub testOddSequenceRates()
+{
+	my $srcImgName = "clock1.jpg";
+	my $movOutName = "testoutput/oddrate.mov";
+	
+	foreach my $rate (500,501,550,597,1.1,29.97)
+	{
+		my $result = sys("qt_export --replacefile=1 $srcImgName $movOutName --sequencerate=$rate");
+		my $qtInfo = getQTInfo($movOutName);
+        my $mediaDurationInfo = $$qtInfo{1}{media_duration};
+        if($mediaDurationInfo =~ /^(.*) \((.*)\/(.*)\)$/)
+        {
+           my $dur = $1;
+           my $num = $2;
+           my $den = $3;
+
+           my $reportedMediaDuration = $den / $num;
+           assertEquals("media duration",$rate,$reportedMediaDuration);
+        }
+        else
+        {
+            assertEquals("no media duration",1,2);
+        }
+	}
+}
+
 sub main(@)
 {
 	my $opts = mp_new_opts(@_);
@@ -334,6 +360,7 @@ sub main(@)
 	else
 	{	
 		testHaveTools();
+        testOddSequenceRates();
 		test6();
 		testQtInfo();
 		test1();

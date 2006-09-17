@@ -602,16 +602,16 @@ int doMovieSequenceImport(ComponentInstance ci,Movie mo,s_parameter_settings *ss
 	if(seqstuff.digitCount < 1)
 		bail(1,nr_sprintf("filename \"%d\" is unnumbered, cant import sequence",ss->source_movie_name));
 
-	nr_printf(1,"# reading sequence frames");
+	nr_printf(1,"# reading sequence frames, %d/%d per frame",ss->ticks_per_frame,ss->ticks_per_second);
 	Rect box;
 	GetMovieBox(mo,&box);
 	long timeScale = GetMovieTimeScale(mo);  // we will use the source time scale. we have to?
 	//printf("timeScale = %d\n",timeScale);
-	printf("src timeScale = %d, dst timeScale = %d/%d\n",timeScale,ss->ticks_per_frame,ss->ticks_per_second);
+	//printf("src timeScale = %d, dst timeScale = %d/%d\n",timeScale,ss->ticks_per_frame,ss->ticks_per_second);
 
 	Movie outMo = NewMovie(0);
 	//SetMovieTimeScale(outMo,timeScale);
-	SetMovieTimeScale(outMo,ss->ticks_per_second);
+	nr_set_movie_time_scale(outMo,ss->ticks_per_second);
 
 	int i;
 	int frameCount = 0;
@@ -631,7 +631,7 @@ int doMovieSequenceImport(ComponentInstance ci,Movie mo,s_parameter_settings *ss
 		if(aFrameMovie != 0)
 		{
 			nr_printf( 2, "Found %s\n", sequenceFileName); // Thanks Chris!
-            SetMovieTimeScale(aFrameMovie,ss->ticks_per_second);
+            nr_set_movie_time_scale(aFrameMovie,ss->ticks_per_second);
 			long spot = GetMovieDuration(outMo);
 			err = InsertMovieSegment(aFrameMovie,outMo,0,1,spot);
 			obailerr(err,"InsertMovieSegment");

@@ -43,6 +43,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXFileReference section */
+		EEA845EB0ABD99460005421A /* clock1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = clock1.jpg; sourceTree = "<group>"; };
 		EECAF8CE0ABBDD4100DB981D /* Makefile */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		EECAF8D00ABBDD4100DB981D /* qt_atom.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = qt_atom.c; sourceTree = "<group>"; };
 		EECAF8D10ABBDD4100DB981D /* qt_atom.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = qt_atom.pl; sourceTree = "<group>"; };
@@ -117,6 +118,7 @@
 		EECAF8E00ABBDD4100DB981D /* testsuite */ = {
 			isa = PBXGroup;
 			children = (
+				EEA845EB0ABD99460005421A /* clock1.jpg */,
 				EECAF8E10ABBDD4100DB981D /* image_sequence.st */,
 				EECAF8E20ABBDD4100DB981D /* runtests.pl */,
 				EECAF8E30ABBDD4100DB981D /* sweep.mov */,
