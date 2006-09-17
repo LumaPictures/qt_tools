@@ -9,8 +9,7 @@
 # REQUIREMENTS:
 #
 #   You must have the Apple Developer Tools installed, and
-#   have /Developer/Tools in your path.
-#   This is for Rez and CpMac.
+#   have /Developer/Tools/Rez & CpMac
 #
 # ex:set tabstop=4:
 # ex:set noexpandtab:
@@ -31,6 +30,8 @@ LIBS = \
 # where things come from...
 SRC = ./src
 TOOLS = ./tools
+REZ = /Developer/Tools/Rez
+CPMAC = /Developer/Tools/CpMac
 
 
 # where things go to.
@@ -46,12 +47,18 @@ SITE = ./qt_tools_site
 SOURCEDIST = ./sourcedist
 
 UTILS = \
-	qtc_utils.c
+	qtc_utils.c \
+	rationalize.c
 
 UTILS_OBJECTS = \
-	$(OBJ)/qtc_utils.o
+	$(OBJ)/qtc_utils.o \
+	$(OBJ)/rationalize.o
 
-INCLUDES = $(SRC)/qtc_utils.h $(OBJ)/qtc_manpages.h $(SRC)/version.h
+INCLUDES = \
+	$(SRC)/qtc_utils.h \
+	$(SRC)/rationalize.h \
+	$(OBJ)/qtc_manpages.h \
+	$(SRC)/version.h
 
 SUITE = qt_export qt_info qt_thing qt_atom qt_proofsheet
 
@@ -88,17 +95,18 @@ help :
 all : bump_build_number $(SUITE) $(UTILS_OBJECTS)
 
 release : all source_to_release runtests
-	@ver=`cat $(SRC)/version.h | $(TOOLS)/spew_version.pl` ;\
+	@ \
+	ver=`cat $(SRC)/version.h | $(TOOLS)/spew_version.pl` ;\
 	dat=`cat $(SRC)/version.h | $(TOOLS)/spew_version.pl 1` ;\
 	rel=$(REL)_$$ver ;\
 	$(EE) Packaging $$rel/ ;\
 	rm -rf $$rel ;\
 	mkdir $$rel ;\
 	mkdir -p $$rel/pieces/bin ;\
-	CpMac -r $(APP)/* $$rel/pieces/bin/ ;\
-	CpMac -r $(MAN) $$rel/pieces/ ;\
-	CpMac -r $(SOURCEDIST) $$rel ;\
-	cat install.sh | sed -e "s/__version__/$$ver $$dat/g" > $$rel/install.sh ;\
+	$(CPMAC) -r $(APP)/* $$rel/pieces/bin/ ;\
+	$(CPMAC) -r $(MAN) $$rel/pieces/ ;\
+	$(CPMAC) -r $(SOURCEDIST) $$rel ;\
+	cat $(SRC)/install.sh | sed -e "s/__version__/$$ver $$dat/g" > $$rel/install.sh ;\
 	chmod +x $$rel/install.sh ;\
 	echo "Version $$ver" > $$rel/README.txt ;\
 	echo " " >> $$rel/README.txt ;\
@@ -131,8 +139,6 @@ check_site_gen :
 	cp -r ./website/* fakesite ;\
 	$(TOOLS)/munge_and_move.pl ./website/index.html fakesite/index.html v=$$v b=$$b d=$$d ;\
 	cp -r $(HTML)/man fakesite
-
-
 
 #
 # Hooray for hdiutil! 2004.10.05, I finally learn this secret!
@@ -218,29 +224,21 @@ $(OBJ)/%.o : $(SRC)/%.c $(INCLUDES)
 $(APP)/% : $(OBJ)/%.o $(UTILS_OBJECTS)
 	$(FOLDERS)
 	$(E) Linking $@
-	gcc $< $(UTILS_OBJECTS) $(LIBS) -g -o $@
+	@gcc $< $(UTILS_OBJECTS) $(LIBS) -g -o $@
 	$(E) Rezzing $@
-	@echo "data 'carb' (0) { };" | Rez -a -o $@
+	@echo "data 'carb' (0) { };" | $(REZ) -a -o $@
 
+# These are just target aliases with no action
 qt_atom : $(APP)/qt_atom
-	@#$(E) Copying qt_atom
-	@#@CpMac $(APP)/qt_atom ./qt_atom
 
 qt_info : $(APP)/qt_info
-	@#$(E) Copying qt_info
-	@#@CpMac $(APP)/qt_info ./qt_info
 
 qt_proofsheet : $(APP)/qt_proofsheet
-	@#$(E) Copying qt_proofsheet
-	@#@CpMac $(APP)/qt_proofsheet ./qt_proofsheet
 
 qt_export : $(APP)/qt_export
-	@#$(E) Copying qt_export
-	@#@CpMac $(APP)/qt_export ./qt_export
 
 qt_thing : $(APP)/qt_thing
-	@#$(E) Copying qt_thing
-	@#@CpMac $(APP)/qt_thing ./qt_thing
+
 
 clean :
 	$(E) cleaning
@@ -253,13 +251,15 @@ source_to_release : $(SUITE)
 	@cp -rf $(TOOLS) $(SOURCEDIST)
 	@cp -f Makefile $(SOURCEDIST)
 	@chmod +w $(SOURCEDIST)/*
-	@mkdir $(SOURCEDIST)/testsuite
-	@cp testsuite/runtests.pl testsuite/sweep.mov $(SOURCEDIST)/testsuite
+	@mkdir -p $(SOURCEDIST)/testsuite
+	@cp -f testsuite/runtests.pl testsuite/sweep.mov $(SOURCEDIST)/testsuite
 
 runtests : $(SUITE)
 	$(E) Running Tests...
 	@cd testsuite ; \
 		./runtests.pl > ../$(OBJ)/testresults.txt
+	$(E) Test Results Tail:
+	tail $(OBJ)/testresults.txt
 	$(E) Done with tests
 
 test_qt_proofsheet:

@@ -44,6 +44,11 @@ sub getFileSize($)
     return $result;
     }
 
+# +-------------------
+# | return reference to hash
+# | of each --key=value
+# |
+
 sub mp_new_opts
   {
   my $arg;
@@ -270,7 +275,7 @@ sub test6
     # image sequence out and in
     #qt_export sweep.mov --exporter=grex --loadsettings=image_sequence.st testoutput/sweep_seq.jpg
 
-    my $seqOutBaseName = "testoutput/sweep_seq";
+    my $seqOutBaseName = "testoutput/sweep1_seq";
     my $seqOut = "$seqOutBaseName.jpg"; # will become 001 to 120
     my $rebuiltMov = "testoutput/rebuilt.mov";
 
@@ -311,17 +316,32 @@ sub main(@)
 	#print $file;
 	#my $qtInfo = getQTInfo($file);
 	#print $$qtInfo{movie_box};
-	
-    system("mkdir testoutput");
-	system("rm testoutput/*");
-	testHaveTools();
-    test6();
-	testQtInfo();
-	test1();
-	test2();
-	test3();
-	test4();
-	test5();
+
+    system("mkdir -p testoutput");
+	system("rm -f testoutput/*");
+
+	my $tests = $$opts{"testlist"};
+	if($tests)
+	{
+		my @testList = split(/,/,$tests);
+		foreach my $oneTest (@testList)
+		{
+			my $doString = "$oneTest()";
+			print "(About to eval: $doString)\n";
+			eval($doString);
+		}
+	}
+	else
+	{	
+		testHaveTools();
+		test6();
+		testQtInfo();
+		test1();
+		test2();
+		test3();
+		test4();
+		test5();
+	}
 
     print "\n\n\nDone. If you see this, the tests passed.\n";
     print "$assertCount assertions correctly assertively asserted.\n\n";

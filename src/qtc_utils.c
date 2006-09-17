@@ -430,13 +430,15 @@ Movie nr_new_movie_from_file_x(char *filename,short *resrefnum_out,short *resid_
 
 	nr_enter_movies();
 	err = NativePathNameToFSSpec(filename,&fs,0);
+	if(err == fnfErr) err = 0; // mixed doc on whether you get fnfErr with this call!
 	bailerr(err,"NativePathNameToFSSpec");
 
 	err = OpenMovieFile(&fs,&frefnum,0);
-	bailerr(err,"OpenMovieFile");
+    if(err)
+        goto go_home;  // this is ok to fail -- return null.
 
 	err = NewMovieFromFile(&mo,frefnum,&movie_resid,0,newMovieActive,0);
-	bailerr(err,"OpenMovieFile");
+	bailerr(err,"NewMovieFromFile");
 
 go_home:
 	if(!mo)
@@ -1089,22 +1091,49 @@ void nr_filename_to_sequence_stuff(char *filename,sequence_stuff *seqstuff_out)
 	int len = strlen(filename);
 	int i;
 	
-	i = 0;
-	while(firstDigitIndex < 0 && i < len)
-	{
-		char k = filename[i];
-		if(m_isdigit(k))
-			firstDigitIndex = i;
-		i++;
-	}
+//	i = 0;
+//	while(firstDigitIndex < 0 && i < len)
+//	{
+//		char k = filename[i];
+//		if(m_isdigit(k))
+//			firstDigitIndex = i;
+//		i++;
+//	}
+//
+//	while(lastDigitIndex < 0 && i < len)
+//	{
+//		char k = filename[i];
+//		if(!m_isdigit(k))
+//			lastDigitIndex = i;
+//		i++;
+//	}
 
-	while(lastDigitIndex < 0 && i < len)
-	{
-		char k = filename[i];
-		if(!m_isdigit(k))
-			lastDigitIndex = i;
-		i++;
-	}
+    /***
+     *  Walk backwards, assuming people put their frame numbers near
+     *  the end of the file.
+     *  Chris Perry Thu Sep 14 21:46:32 EDT 2006
+     */
+	i = len - 1;
+    while (lastDigitIndex < 0 && i >= 0)
+    {
+        char k = filename[i];
+        if(m_isdigit(k))
+            lastDigitIndex = i+1;
+        else
+            i--;
+    }
+    while (firstDigitIndex < 0 && i >= 0)
+    {
+        char k = filename[i];
+        if (!m_isdigit(k))
+            firstDigitIndex = i + 1;
+        else
+            i--;
+    }
+	/* end of Chris Perry fix */
+
+
+
 	
 	seqstuff_out->beforeNumerals = csubstr(filename,0,firstDigitIndex);
 	seqstuff_out->digitCount = lastDigitIndex - firstDigitIndex;

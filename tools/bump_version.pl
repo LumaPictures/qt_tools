@@ -44,6 +44,7 @@ sub main
 	my $what_to_increment = shift;
 
 	my $have_rcs = (-d "RCS");
+	my $have_svn = (-d ".svn");
 
 	usage() if(!$version_file or !$what_to_increment);
 
@@ -76,7 +77,7 @@ sub main
 
 			if($name eq $what_to_increment)
 				{
-				if($have_rcs)
+				if($have_rcs || $have_svn)
 					{
 					print ". bumping $name from $value to ",$value + 1,".\n";
 					$value = $value + 1;

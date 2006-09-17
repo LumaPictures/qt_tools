@@ -1,0 +1,346 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		EE29B2C50ABCC25100125B0A /* make release */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = EE29B2C70ABCC25100125B0A /* Build configuration list for PBXAggregateTarget "make release" */;
+			buildPhases = (
+				EE29B2C60ABCC25100125B0A /* make release */,
+			);
+			dependencies = (
+			);
+			name = "make release";
+			productName = a_target;
+		};
+		EECAF8120ABBD25E00DB981D /* make */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = EECAF8130ABBD27D00DB981D /* Build configuration list for PBXAggregateTarget "make" */;
+			buildPhases = (
+				EECAF8110ABBD25E00DB981D /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = make;
+			productName = a_target;
+		};
+		EECAF8500ABBD3B700DB981D /* make clean */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = EECAF85D0ABBD40300DB981D /* Build configuration list for PBXAggregateTarget "make clean" */;
+			buildPhases = (
+				EECAF84F0ABBD3B700DB981D /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = "make clean";
+			productName = "make clean";
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXFileReference section */
+		EECAF8CE0ABBDD4100DB981D /* Makefile */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		EECAF8D00ABBDD4100DB981D /* qt_atom.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = qt_atom.c; sourceTree = "<group>"; };
+		EECAF8D10ABBDD4100DB981D /* qt_atom.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = qt_atom.pl; sourceTree = "<group>"; };
+		EECAF8D20ABBDD4100DB981D /* qt_export.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = qt_export.c; sourceTree = "<group>"; };
+		EECAF8D30ABBDD4100DB981D /* qt_export.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = qt_export.pl; sourceTree = "<group>"; };
+		EECAF8D40ABBDD4100DB981D /* qt_info.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = qt_info.c; sourceTree = "<group>"; };
+		EECAF8D50ABBDD4100DB981D /* qt_info.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = qt_info.pl; sourceTree = "<group>"; };
+		EECAF8D60ABBDD4100DB981D /* qt_proofsheet.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = qt_proofsheet.c; sourceTree = "<group>"; };
+		EECAF8D70ABBDD4100DB981D /* qt_proofsheet.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = qt_proofsheet.pl; sourceTree = "<group>"; };
+		EECAF8D80ABBDD4100DB981D /* qt_thing.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = qt_thing.c; sourceTree = "<group>"; };
+		EECAF8D90ABBDD4100DB981D /* qt_thing.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = qt_thing.pl; sourceTree = "<group>"; };
+		EECAF8DA0ABBDD4100DB981D /* qt_tools.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = qt_tools.pl; sourceTree = "<group>"; };
+		EECAF8DB0ABBDD4100DB981D /* qtc_utils.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = qtc_utils.c; sourceTree = "<group>"; };
+		EECAF8DC0ABBDD4100DB981D /* qtc_utils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = qtc_utils.h; sourceTree = "<group>"; };
+		EECAF8DD0ABBDD4100DB981D /* rationalize.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = rationalize.c; sourceTree = "<group>"; };
+		EECAF8DE0ABBDD4100DB981D /* rationalize.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = rationalize.h; sourceTree = "<group>"; };
+		EECAF8DF0ABBDD4100DB981D /* version.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
+		EECAF8E10ABBDD4100DB981D /* image_sequence.st */ = {isa = PBXFileReference; lastKnownFileType = file; path = image_sequence.st; sourceTree = "<group>"; };
+		EECAF8E20ABBDD4100DB981D /* runtests.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = runtests.pl; sourceTree = "<group>"; };
+		EECAF8E30ABBDD4100DB981D /* sweep.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = sweep.mov; sourceTree = "<group>"; };
+		EECAF9690ABBDD4200DB981D /* bump_version.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = bump_version.pl; sourceTree = "<group>"; };
+		EECAF96A0ABBDD4200DB981D /* misc.pm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = misc.pm; sourceTree = "<group>"; };
+		EECAF96B0ABBDD4200DB981D /* munge_and_move.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = munge_and_move.pl; sourceTree = "<group>"; };
+		EECAF96C0ABBDD4200DB981D /* spew_version.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = spew_version.pl; sourceTree = "<group>"; };
+		EECAF96D0ABBDD4200DB981D /* text2printf.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = text2printf.pl; sourceTree = "<group>"; };
+		EECAF96F0ABBDD4200DB981D /* dice_to_10.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = dice_to_10.txt; sourceTree = "<group>"; };
+		EECAF9710ABBDD4200DB981D /* clip_103.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = clip_103.jpg; sourceTree = "<group>"; };
+		EECAF9720ABBDD4200DB981D /* qt_tools_logo200.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = qt_tools_logo200.jpg; sourceTree = "<group>"; };
+		EECAF9730ABBDD4200DB981D /* sweep.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = sweep.jpg; sourceTree = "<group>"; };
+		EECAF9740ABBDD4200DB981D /* sweepsmall.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = sweepsmall.mov; sourceTree = "<group>"; };
+		EECAF9750ABBDD4200DB981D /* index.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		EECAF9760ABBDD4200DB981D /* qt_info_example.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html; path = qt_info_example.html; sourceTree = "<group>"; };
+		EECAF9770ABBDD4200DB981D /* qt_proofsheet_example_1.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html; path = qt_proofsheet_example_1.html; sourceTree = "<group>"; };
+		EECAF9780ABBDD4200DB981D /* qt_proofsheet_example_2.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html; path = qt_proofsheet_example_2.html; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		EECAF8020ABBD23500DB981D = {
+			isa = PBXGroup;
+			children = (
+				EECAF8CE0ABBDD4100DB981D /* Makefile */,
+				EECAF8CF0ABBDD4100DB981D /* src */,
+				EECAF8E00ABBDD4100DB981D /* testsuite */,
+				EECAF9680ABBDD4200DB981D /* tools */,
+				EECAF96E0ABBDD4200DB981D /* website */,
+			);
+			sourceTree = "<group>";
+		};
+		EECAF8CF0ABBDD4100DB981D /* src */ = {
+			isa = PBXGroup;
+			children = (
+				EECAF8D00ABBDD4100DB981D /* qt_atom.c */,
+				EECAF8D10ABBDD4100DB981D /* qt_atom.pl */,
+				EECAF8D20ABBDD4100DB981D /* qt_export.c */,
+				EECAF8D30ABBDD4100DB981D /* qt_export.pl */,
+				EECAF8D40ABBDD4100DB981D /* qt_info.c */,
+				EECAF8D50ABBDD4100DB981D /* qt_info.pl */,
+				EECAF8D60ABBDD4100DB981D /* qt_proofsheet.c */,
+				EECAF8D70ABBDD4100DB981D /* qt_proofsheet.pl */,
+				EECAF8D80ABBDD4100DB981D /* qt_thing.c */,
+				EECAF8D90ABBDD4100DB981D /* qt_thing.pl */,
+				EECAF8DA0ABBDD4100DB981D /* qt_tools.pl */,
+				EECAF8DB0ABBDD4100DB981D /* qtc_utils.c */,
+				EECAF8DC0ABBDD4100DB981D /* qtc_utils.h */,
+				EECAF8DD0ABBDD4100DB981D /* rationalize.c */,
+				EECAF8DE0ABBDD4100DB981D /* rationalize.h */,
+				EECAF8DF0ABBDD4100DB981D /* version.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		EECAF8E00ABBDD4100DB981D /* testsuite */ = {
+			isa = PBXGroup;
+			children = (
+				EECAF8E10ABBDD4100DB981D /* image_sequence.st */,
+				EECAF8E20ABBDD4100DB981D /* runtests.pl */,
+				EECAF8E30ABBDD4100DB981D /* sweep.mov */,
+			);
+			path = testsuite;
+			sourceTree = "<group>";
+		};
+		EECAF9680ABBDD4200DB981D /* tools */ = {
+			isa = PBXGroup;
+			children = (
+				EECAF9690ABBDD4200DB981D /* bump_version.pl */,
+				EECAF96A0ABBDD4200DB981D /* misc.pm */,
+				EECAF96B0ABBDD4200DB981D /* munge_and_move.pl */,
+				EECAF96C0ABBDD4200DB981D /* spew_version.pl */,
+				EECAF96D0ABBDD4200DB981D /* text2printf.pl */,
+			);
+			path = tools;
+			sourceTree = "<group>";
+		};
+		EECAF96E0ABBDD4200DB981D /* website */ = {
+			isa = PBXGroup;
+			children = (
+				EECAF96F0ABBDD4200DB981D /* dice_to_10.txt */,
+				EECAF9700ABBDD4200DB981D /* images */,
+				EECAF9750ABBDD4200DB981D /* index.html */,
+				EECAF9760ABBDD4200DB981D /* qt_info_example.html */,
+				EECAF9770ABBDD4200DB981D /* qt_proofsheet_example_1.html */,
+				EECAF9780ABBDD4200DB981D /* qt_proofsheet_example_2.html */,
+			);
+			path = website;
+			sourceTree = "<group>";
+		};
+		EECAF9700ABBDD4200DB981D /* images */ = {
+			isa = PBXGroup;
+			children = (
+				EECAF9710ABBDD4200DB981D /* clip_103.jpg */,
+				EECAF9720ABBDD4200DB981D /* qt_tools_logo200.jpg */,
+				EECAF9730ABBDD4200DB981D /* sweep.jpg */,
+				EECAF9740ABBDD4200DB981D /* sweepsmall.mov */,
+			);
+			path = images;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		EECAF8040ABBD23500DB981D /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = EECAF8050ABBD23500DB981D /* Build configuration list for PBXProject "qtx" */;
+			hasScannedForEncodings = 0;
+			mainGroup = EECAF8020ABBD23500DB981D;
+			projectDirPath = "";
+			targets = (
+				EECAF8120ABBD25E00DB981D /* make */,
+				EECAF8500ABBD3B700DB981D /* make clean */,
+				EE29B2C50ABCC25100125B0A /* make release */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		EE29B2C60ABCC25100125B0A /* make release */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "make release";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make release\nexit 0";
+		};
+		EECAF8110ABBD25E00DB981D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here\nmake\nexit 0";
+		};
+		EECAF84F0ABBD3B700DB981D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here\nmake clean\nexit 0";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		EE29B2C80ABCC25100125B0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = a_target;
+			};
+			name = Debug;
+		};
+		EE29B2C90ABCC25100125B0A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				PRODUCT_NAME = a_target;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		EECAF8060ABBD23500DB981D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		EECAF8070ABBD23500DB981D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = Release;
+		};
+		EECAF8140ABBD27D00DB981D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = a_target;
+			};
+			name = Debug;
+		};
+		EECAF8150ABBD27D00DB981D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				PRODUCT_NAME = a_target;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		EECAF85E0ABBD40300DB981D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = "make clean";
+			};
+			name = Debug;
+		};
+		EECAF85F0ABBD40300DB981D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				PRODUCT_NAME = "make clean";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		EE29B2C70ABCC25100125B0A /* Build configuration list for PBXAggregateTarget "make release" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE29B2C80ABCC25100125B0A /* Debug */,
+				EE29B2C90ABCC25100125B0A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EECAF8050ABBD23500DB981D /* Build configuration list for PBXProject "qtx" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EECAF8060ABBD23500DB981D /* Debug */,
+				EECAF8070ABBD23500DB981D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EECAF8130ABBD27D00DB981D /* Build configuration list for PBXAggregateTarget "make" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EECAF8140ABBD27D00DB981D /* Debug */,
+				EECAF8150ABBD27D00DB981D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EECAF85D0ABBD40300DB981D /* Build configuration list for PBXAggregateTarget "make clean" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EECAF85E0ABBD40300DB981D /* Debug */,
+				EECAF85F0ABBD40300DB981D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = EECAF8040ABBD23500DB981D /* Project object */;
+}

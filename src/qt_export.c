@@ -13,6 +13,7 @@
 
 #include "qtc_utils.h"
 #include "qtc_manpages.h"
+#include "rationalize.h"
 
 #define k_string_size 1024
 
@@ -140,6 +141,8 @@ typedef struct
     int b_ignore_user_canceled; // special hack for 'MPEG'/0 mpeg2 exporter
 
     double sequence_rate;
+	int ticks_per_frame;
+	int ticks_per_second;
 	} s_parameter_settings;
 
 
@@ -426,6 +429,21 @@ int r_args_to_settings(int argc,char **argv,s_parameter_settings *ssOut)
 	ss.replace_file = nr_find_arg_int(argc,argv,"replacefile",0,0);
     ss.sequence_rate = nr_find_arg_double(argc,argv,"sequencerate",0,ss.sequence_rate);
 
+    {
+		unsigned long long ticks_per_frame; // aka numerator
+		unsigned long long ticks_per_second; // aka denominator & time scale
+		
+        // inverted, turning fps into time...
+		rationalize(ss.sequence_rate,1000000,1000000,&ticks_per_second,&ticks_per_frame);
+		while(ticks_per_second < 60)
+		{
+			ticks_per_second *= 10;
+			ticks_per_frame *= 10;
+		}
+		ss.ticks_per_frame = ticks_per_frame;
+		ss.ticks_per_second = ticks_per_second;
+	}
+
 	// | populate parameter settings with defaults
 
 	ss.exporter_subtype = 'MooV';
@@ -588,28 +606,41 @@ int doMovieSequenceImport(ComponentInstance ci,Movie mo,s_parameter_settings *ss
 	Rect box;
 	GetMovieBox(mo,&box);
 	long timeScale = GetMovieTimeScale(mo);  // we will use the source time scale. we have to?
-	printf("timeScale = %d\n",timeScale);
+	//printf("timeScale = %d\n",timeScale);
+	printf("src timeScale = %d, dst timeScale = %d/%d\n",timeScale,ss->ticks_per_frame,ss->ticks_per_second);
 
 	Movie outMo = NewMovie(0);
-	SetMovieTimeScale(outMo,timeScale);
+	//SetMovieTimeScale(outMo,timeScale);
+	SetMovieTimeScale(outMo,ss->ticks_per_second);
 
 	int i;
 	int frameCount = 0;
+	
+	// copy of parameter settings just to pass current frame filename
+	// to the progress proc, while still getting the 2% throttling
+	s_parameter_settings ssCopy = *ss;
 	for(i = 0; i < seqstuff.indexMax; i++)
 	{
-		r_progress_proc(0,1,1,i * 65536 / seqstuff.indexMax,(long)ss);
-
 		char *sequenceFileName = nr_sequence_stuff_to_filename(&seqstuff,i);
+		ssCopy.source_movie_name = sequenceFileName;
+		r_progress_proc(0,1,1,i * 65536 / seqstuff.indexMax,(long)(&ssCopy));
+
+        // we expect this to often fail, and return 0
+
 		Movie aFrameMovie = nr_new_movie_from_file(sequenceFileName);
 		if(aFrameMovie != 0)
 		{
+			nr_printf( 2, "Found %s\n", sequenceFileName); // Thanks Chris!
+            SetMovieTimeScale(aFrameMovie,ss->ticks_per_second);
 			long spot = GetMovieDuration(outMo);
 			err = InsertMovieSegment(aFrameMovie,outMo,0,1,spot);
 			obailerr(err,"InsertMovieSegment");
 			
 			DisposeMovie(aFrameMovie); // bye, frame.
 
-			err = ScaleMovieSegment(outMo,spot,1,timeScale / ss->sequence_rate);
+			//err = ScaleMovieSegment(outMo,spot,1,timeScale / ss->sequence_rate);
+			err = ScaleMovieSegment(outMo,spot,1,ss->ticks_per_frame);
+			//err = ScaleMovieSegment(outMo,spot,1, ss->ticks_per_frame);
 			obailerr(err,"ScaleMovieSegment");
 			
 			frameCount++;
@@ -656,6 +687,8 @@ int doMovieExport(ComponentInstance ci,Movie mo,s_parameter_settings *ss)
 		// |
 
 		movie_time_scale = GetMovieTimeScale(mo);
+nr_printf(2,"# doMovieExport source movie_time_scale = %d\n",(int)movie_time_scale); //!!!
+nr_printf(2,"# doMovieExport ss frame_rate = %f\n",ss->frame_rate); //!!!
 		start_time = (int)(ss->start_time * movie_time_scale);
 		duration = (int)((ss->end_time - ss->start_time) * movie_time_scale);
 
@@ -683,7 +716,7 @@ int doMovieExport(ComponentInstance ci,Movie mo,s_parameter_settings *ss)
 
 		err = NativePathNameToFSSpec(ss->export_movie_name,&fs,0);
 		if(err == fnfErr) err = 0; // mixed doc on whether you get fnfErr with this call!
-		obailerr(err,"NativePathNameToFSSpec");
+		//!!! put back obailerr(err,nr_sprintf("xx NativePathNameToFSSpec %d",err));
 
 		err = nr_file_exists(ss->export_movie_name);
 		if(err == 0) // file already exists!

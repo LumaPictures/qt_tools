@@ -29,12 +29,12 @@
 
 // low level bail macros
 
-#define bailerr(_x,_msg) if((_x) < 0) bail(2,_msg)
+#define bailerr(_x,_msg) if((_x) < 0) bail(2,nr_sprintf("%s %d" , (_msg) , (_x) ))
 #define bailnil(_x,_msg) if((_x) == 0) bail(2,_msg)
 
 // outermost bail macros
 
-#define obailerr(_x,_msg) if((_x) < 0) bail(1,_msg)
+#define obailerr(_x,_msg) if((_x) < 0) bail(1,nr_sprintf("%s %d" , (_msg) , (_x) ))
 #define obailnil(_x,_msg) if((_x) == 0) bail(1,_msg)
 
 // | Convenient for --help usage
