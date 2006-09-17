@@ -79,6 +79,8 @@ int nr_map_int(int value,
 void nr_enter_movies(void);
 Movie nr_new_movie_from_file(char *filename);
 Movie nr_new_movie_from_file_x(char *filename,short *resrefnum_out,short *resid_out);
+void nr_set_movie_time_scale(Movie mo, TimeScale timeScale);
+OSErr nr_flatten_movie_to_file(Movie mo,char *filename);
 ComponentInstance nr_open_component(OSType ctype,OSType csubtype, OSType cmfr);
 
 // | pretty printing for these utilities

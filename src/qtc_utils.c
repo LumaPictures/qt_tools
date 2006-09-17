@@ -452,6 +452,41 @@ go_home:
 	return mo;
 	}
 
+OSErr nr_flatten_movie_to_file(Movie mo,char *filename)
+{
+	OSErr err;
+	FSSpec fs;
+
+	nr_enter_movies();
+	err = NativePathNameToFSSpec(filename,&fs,0);
+	if(err == fnfErr) err = 0; // mixed doc on whether you get fnfErr with this call!
+	bailerr(err,"NativePathNameToFSSpec");
+	
+	long flags = flattenAddMovieToDataFork;
+	
+	FlattenMovie(mo,flags,&fs,'TVOD',0,createMovieFileDeleteCurFile,0,0);
+	err = GetMoviesError();
+	bailerr(err,"FlattenMovie");
+go_home:
+	return err;
+}
+
+// +----------------------------
+// | set timescale of movie and all tracks
+// |
+void nr_set_movie_time_scale(Movie mo, TimeScale timeScale)
+{
+	SetMovieTimeScale(mo,timeScale);
+	int trackCount = GetMovieTrackCount(mo);
+	int i;
+	for(i = 1; i <= trackCount; i++)
+	{
+		Track tr = GetMovieIndTrack(mo,i);
+		Media me = GetTrackMedia(tr);
+		SetMediaTimeScale(me,timeScale);
+	}
+}
+
 ComponentInstance nr_open_component(OSType ctype,OSType csubtype, OSType cmfr)
 	{
 	int err;
