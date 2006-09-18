@@ -298,11 +298,11 @@ sub test6
 sub testOddSequenceRates()
 {
 	my $srcImgName = "clock1.jpg";
-	my $movOutName = "testoutput/oddrate.mov";
 	
 	foreach my $rate (500,501,550,597,1.1,29.97)
 	{
-		my $result = sys("qt_export --replacefile=1 $srcImgName $movOutName --sequencerate=$rate");
+	    my $movOutName = "testoutput/oddrate$rate.mov";
+		my $result = sys("qt_export $srcImgName $movOutName --sequencerate=$rate");
 		my $qtInfo = getQTInfo($movOutName);
         my $mediaDurationInfo = $$qtInfo{1}{media_duration};
         if($mediaDurationInfo =~ /^(.*) \((.*)\/(.*)\)$/)
@@ -312,7 +312,7 @@ sub testOddSequenceRates()
            my $den = $3;
 
            my $reportedMediaDuration = $den / $num;
-           assertEquals("media duration",$rate,$reportedMediaDuration);
+           assertEquals("media frame fraction [$mediaDurationInfo]",$rate,$reportedMediaDuration);
         }
         else
         {
@@ -344,7 +344,7 @@ sub main(@)
 	#print $$qtInfo{movie_box};
 
     system("mkdir -p testoutput");
-	system("rm -f testoutput/*");
+	system("rm -f testoutput/* testoutput/.Q*");
 
 	my $tests = $$opts{"testlist"};
 	if($tests)
