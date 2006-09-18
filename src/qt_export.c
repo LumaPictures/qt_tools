@@ -590,6 +590,38 @@ go_home:
 }
 
 
+int doRoxiAtomicSetup(s_parameter_settings *ss,ComponentInstance ci)
+{
+	// +------------------------------
+	// | Special default roxio params
+	int err = 0;
+	if(ss->exporter_subtype == 'MPG '
+			&& ss->exporter_mfr == 'Roxi')
+		{
+		QTAtomContainer roxi_ac;
+		roxio_RtvS rtvs = {0};
+
+		rtvs.format = 0; // ntsc
+		rtvs.shape = 1; // fit
+		rtvs.launch_toast = 0; // its already zero, but I feel so strongly
+		rtvs.quality = 2; // better
+
+		err = QTNewAtomContainer(&roxi_ac);
+		obailerr(err,"Could not create atom container");
+
+		// must be atom id 1000
+		err = nr_insert_deep_atom_data_id(roxi_ac,"RtvS",sizeof(rtvs),&rtvs,1000);
+		obailerr(err,"Could not insert RtvS atom for Roxio MPEG");
+
+		err = MovieExportSetSettingsFromAtomContainer(ci,roxi_ac);
+		obailerr(err,"Could not set settings for Roxio MPEG");
+
+		QTDisposeAtomContainer(roxi_ac); // polite, not that it matters
+		}
+go_home:
+	return err;
+}
+
 
 // mo is the source movie
 int doMovieSequenceImport(ComponentInstance ci,Movie mo,s_parameter_settings *ss)
@@ -622,9 +654,6 @@ int doMovieSequenceImport(ComponentInstance ci,Movie mo,s_parameter_settings *ss
 	for(i = 0; i < seqstuff.indexMax; i++)
 	{
 		char *sequenceFileName = nr_sequence_stuff_to_filename(&seqstuff,i);
-		ssCopy.source_movie_name = sequenceFileName;
-		r_progress_proc(0,1,1,i * 65536 / seqstuff.indexMax,(long)(&ssCopy));
-
         // we expect this to often fail, and return 0
 
 		Movie aFrameMovie = nr_new_movie_from_file(sequenceFileName);
@@ -644,7 +673,13 @@ int doMovieSequenceImport(ComponentInstance ci,Movie mo,s_parameter_settings *ss
 			obailerr(err,"ScaleMovieSegment");
 			
 			frameCount++;
+			ssCopy.source_movie_name = nr_sprintf("found: %s (%d)",sequenceFileName,frameCount);
 		}
+		else
+			ssCopy.source_movie_name = nr_sprintf("checking: %s (%d)",sequenceFileName,frameCount);
+		
+
+		r_progress_proc(0,1,1,i * 65536 / seqstuff.indexMax,(long)(&ssCopy));
 	}
 	nr_printf(1,"# found %d frames",frameCount);
 	nr_printf(1,"# exporting movie");
@@ -793,10 +828,6 @@ main(int argc,char **argv)
 
 	nr_printf(1,"");
 
-    // |
-    // | these fields are only icky hacks for MPEG 2 exporter
-    // |
-	
 	r_args_to_settings(argc,argv,&ss);
 
 	// +---------------------------
@@ -831,46 +862,9 @@ main(int argc,char **argv)
 					ss.exporter_mfr));
 
 
-	// +------------------------------
-	// | preload some exporters with specific data
-    // | or modality
-	// |
-	if(ss.exporter_subtype == 'MPG '
-			&& ss.exporter_mfr == 'Roxi')
-		{
-		QTAtomContainer roxi_ac;
-		roxio_RtvS rtvs = {0};
-
-		rtvs.format = 0; // ntsc
-		rtvs.shape = 1; // fit
-		rtvs.launch_toast = 0; // its already zero, but I feel so strongly
-		rtvs.quality = 2; // better
-
-		err = QTNewAtomContainer(&roxi_ac);
-		obailerr(err,"Could not create atom container");
-
-		// must be atom id 1000
-		err = nr_insert_deep_atom_data_id(roxi_ac,"RtvS",sizeof(rtvs),&rtvs,1000);
-		obailerr(err,"Could not insert RtvS atom for Roxio MPEG");
-
-		err = MovieExportSetSettingsFromAtomContainer(ci,roxi_ac);
-		obailerr(err,"Could not set settings for Roxio MPEG");
-
-		QTDisposeAtomContainer(roxi_ac); // polite, not that it matters
-		}
-    else if (ss.exporter_subtype == 'MPEG'
-            && ss.exporter_mfr == 0)
-        {
-        // |
-        // | The apple MPEG2 exporter -- as provided with DVDStudioPro --
-        // | is pretty obnoxious. It does *not* support QTAtom storage
-        // | of parameters, and, additionally, it seems to have a bug
-        // | where after the user dialog it always says, "ha! the
-        // | user canceled!"
-        // |
-        //ss.b_supports_atoms = 0;
-        ss.b_ignore_user_canceled = 1;
-        }
+	// A special setup for roxio
+	err = doRoxiAtomicSetup(&ss,ci);
+	obailerr(err,"setup for Roxio mpg export");
 
 	// |
 	// | done with any special preloadery
