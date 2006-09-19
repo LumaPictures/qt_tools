@@ -97,13 +97,24 @@ sub mp_new_opts
 sub getQTInfo($)
 {
 	my %result;
-	my $trackIndex = 0;
 	my $fileName = shift;
 
-	my $qtInfo = `$appsLoc/qt_info $fileName`;
-	my @qtInfoLines = split(/[\n\r]+/s,$qtInfo);
+	my $qtInfoCmd = "$appsLoc/qt_info $fileName";
+	my $result = snagParseableOutput($qtInfoCmd);
+	my $assnCount = scalar(keys(%$result));
+    print "qt_info on $fileName got $assnCount values, dur=$$result{movie_duration}\n";
+	return $result;
+}
+
+sub snagParseableOutput($)
+{
+	my $cmdLine = shift;
+	my $parseableInfo = `$cmdLine`;
+	my @infoLines = split(/[\n\r]+/, $parseableInfo);
     my $assnCount = 0;
-	foreach my $line (@qtInfoLines)
+	my $trackIndex = 0;
+	my %result;
+	foreach my $line (@infoLines)
 	{
 		if($line =~ /^\+ *(.*?) : (.*?) *$/)
 		{
@@ -124,9 +135,10 @@ sub getQTInfo($)
 			}
 		}
 	}
-    print "qt_info on $fileName got $assnCount values, dur=$result{movie_duration}\n";
 	return \%result;
 }
+
+
 
 my $assertCount = 0;
 sub assertFileExists($)
@@ -321,6 +333,25 @@ sub testOddSequenceRates()
 	}
 }
 
+sub testExporterSelecting()
+{
+	foreach my $try (
+			"aif,AIFF,soun",
+			"aiff,AIFF,soun",
+			"dv,dvc!,appl",
+			"mp3,mp3,PYEh",
+			"wav,WAVE,soun",
+			"mp4,mpg4,appl")
+	{
+		my ($extension,$subtype,$mfr) = split(/,/,$try);
+		my $resultFile = "testoutput/fooxport.$extension";
+		my $assns = snagParseableOutput("${appsLoc}qt_export $sweepMov --duration=0,.1 $resultFile");
+		assertEq("choosing exporter subtype for $extension",$subtype,$$assns{exporter_subtype});
+		assertEq("choosing exporter mfr for $extension",$mfr,$$assns{exporter_mfr});
+		assertFileExists("$resultFile");
+	}
+}
+
 sub main(@)
 {
 	my $opts = mp_new_opts(@_);
@@ -360,6 +391,7 @@ sub main(@)
 	else
 	{	
 		testHaveTools();
+		testExporterSelecting();
         testOddSequenceRates();
 		test6();
 		testQtInfo();

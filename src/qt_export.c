@@ -143,7 +143,7 @@ typedef struct
     double sequence_rate;
 	int ticks_per_frame;
 	int ticks_per_second;
-	} s_parameter_settings;
+	} qte_parameter_settings;
 
 
 // +---------------------
@@ -165,10 +165,15 @@ typedef struct
 	char zeropad[11];  // must be 0
 	} roxio_RtvS;
 
-void r_print_parameter_settings(s_parameter_settings *ss)
+void r_print_parameter_settings(qte_parameter_settings *ss)
 	{
 	nr_print_cr();
+	nr_print_ostype("exporter subtype",ss->exporter_subtype);
+	nr_print_ostype("exporter mfr",ss->exporter_mfr);
+	nr_print_cr();
 	nr_print_d_time_range("duration",ss->start_time,ss->end_time);
+
+	
 	if(ss->video_compressor != '0   ' || ss->exporter_video)
 		{
 		nr_print_ostype("video compressor",
@@ -198,7 +203,7 @@ void r_print_parameter_settings(s_parameter_settings *ss)
 	nr_print_cr();
 	}
 
-int r_atom_container_to_parameter_settings(QTAtomContainer ac,s_parameter_settings *ss)
+int r_atom_container_to_parameter_settings(QTAtomContainer ac,qte_parameter_settings *ss)
 	{
 	SCSpatialSettings sps = {0};
 	SCTemporalSettings sts = {0};
@@ -270,7 +275,7 @@ int r_atom_container_to_parameter_settings(QTAtomContainer ac,s_parameter_settin
 // |
 // | similarly for the audio compressor
 
-int r_parameter_settings_atop_atom_container(s_parameter_settings *ss,QTAtomContainer ac)
+int r_parameter_settings_atop_atom_container(qte_parameter_settings *ss,QTAtomContainer ac)
 	{
 	SCSpatialSettings sps = {0};
 	SCTemporalSettings sts = {0};
@@ -355,7 +360,7 @@ OSErr r_progress_proc
 		long refcon
 		)
 	{
-	s_parameter_settings *ss = (s_parameter_settings *)refcon;
+	qte_parameter_settings *ss = (qte_parameter_settings *)refcon;
 	double percent = percentDone * 100.0 / 65536.0;
 	static double recent_percent = -100;
 
@@ -386,17 +391,70 @@ go_home:
 	return 0;
 	}
 
+/*
+ * Assign a reasonable exporter type & subtype.
+ */
 
-int r_args_to_settings(int argc,char **argv,s_parameter_settings *ssOut)
+#define EXTMAP(_ext,_subtype,_mfr) \
+	if(stringsEqual(ext,_ext)) \
+	{ \
+		ss->exporter_subtype = _subtype; \
+		ss->exporter_mfr = _mfr; \
+	}
+
+
+static void r_guess_exporter_subtype(qte_parameter_settings *ss)
 {
-	s_parameter_settings ss = {0};
+	ss->exporter_subtype = 'MooV';
+	ss->exporter_mfr = 'appl';
+
+	char *ext = fileExt(ss->export_movie_name);
+nr_printf(1,"ext is %s\n",ext);
+
+	EXTMAP("aif",'AIFF','soun');
+	EXTMAP("aiff",'AIFF','soun');
+	EXTMAP("dv",'dvc!','appl');
+	EXTMAP("wav",'WAVE','soun');
+	EXTMAP("mp4",'mpg4','appl');
+	EXTMAP("au",'ULAW','soun');
+	EXTMAP("avi",'VfW ','appl');
+
+		/*
+		 * The LAME mp3 encoder, 
+		 * from Lynn Pye -- no longer
+		 * available??
+		 * pyehouse.com
+		 */
+	EXTMAP("mp3",'mp3 ','PYEh');
+
+//	if(stringsEqual(ext,"aif") || stringsEqual(ext,"aiff"))
+//	{
+//		ss->exporter_subtype = 'AIFF';
+//		ss->exporter_mfr = 'soun';
+//	}
+//	if(stringsEqual(ext,"mp3"))
+//	{
+//		ss->exporter_subtype = 'mp3';
+//		ss->exporter_mfr = 'PYEh';
+//	}
+//	if(stringsEqual(ext,"dv"))
+//	{
+//		ss->exporter_subtype = 'dvc!';
+//		ss->exporter_mfr = 'appl';
+//	}
+}
+
+
+int r_args_to_settings(int argc,char **argv,qte_parameter_settings *ssOut)
+{
+	qte_parameter_settings ss = {0};
 	int found_it = 0;
 	int err = 0;
 
     ss.sequence_rate = -1;
     ss.b_supports_atoms = 1;
     ss.b_ignore_user_canceled = 0;
-
+	
   	// |
 	// | needs two movie arguments to work... or none
 	// | (for just settings-stuffs)
@@ -404,6 +462,13 @@ int r_args_to_settings(int argc,char **argv,s_parameter_settings *ssOut)
 
 	found_it = nr_find_arg(argc,argv,"1",0,&ss.source_movie_name);
 	found_it = nr_find_arg(argc,argv,"2",0,&ss.export_movie_name);
+
+	// |
+	// | If they did specify an export name, try to pick
+	// | the right exporter based on the filename extension
+	// |
+	r_guess_exporter_subtype(&ss);
+
 
 	if(ss.source_movie_name && !ss.export_movie_name)
 		{
@@ -443,11 +508,6 @@ int r_args_to_settings(int argc,char **argv,s_parameter_settings *ssOut)
 		ss.ticks_per_frame = ticks_per_frame;
 		ss.ticks_per_second = ticks_per_second;
 	}
-
-	// | populate parameter settings with defaults
-
-	ss.exporter_subtype = 'MooV';
-	ss.exporter_mfr = 'appl';
 
 	// |
 	// | !!! TODO (as they say): fill in an exporter type based on the
@@ -590,7 +650,7 @@ go_home:
 }
 
 
-int doRoxiAtomicSetup(s_parameter_settings *ss,ComponentInstance ci)
+int doRoxiAtomicSetup(qte_parameter_settings *ss,ComponentInstance ci)
 {
 	// +------------------------------
 	// | Special default roxio params
@@ -624,7 +684,7 @@ go_home:
 
 
 // mo is the source movie
-int doMovieSequenceImport(ComponentInstance ci,Movie mo,s_parameter_settings *ss)
+int doMovieSequenceImport(ComponentInstance ci,Movie mo,qte_parameter_settings *ss)
 {
 	int err = 0;
 	// analyze filename of source to discern the numbering pattern of the files...
@@ -650,7 +710,7 @@ int doMovieSequenceImport(ComponentInstance ci,Movie mo,s_parameter_settings *ss
 	
 	// copy of parameter settings just to pass current frame filename
 	// to the progress proc, while still getting the 2% throttling
-	s_parameter_settings ssCopy = *ss;
+	qte_parameter_settings ssCopy = *ss;
 	for(i = 0; i < seqstuff.indexMax; i++)
 	{
 		char *sequenceFileName = nr_sequence_stuff_to_filename(&seqstuff,i);
@@ -706,7 +766,7 @@ go_home:
 // |
 // |
 
-int doMovieExport(ComponentInstance ci,Movie mo,s_parameter_settings *ss)
+int doMovieExport(ComponentInstance ci,Movie mo,qte_parameter_settings *ss)
 {
 	int err = 0;
 	if(mo)
@@ -808,7 +868,7 @@ main(int argc,char **argv)
 	OSErr err = 0;
 	ComponentInstance ci;
 	int found_it = 0;
-	s_parameter_settings ss = {0};
+	qte_parameter_settings ss = {0};
 	QTAtomContainer ac = 0;
 
 	setbuf(stdout,0);

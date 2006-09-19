@@ -155,6 +155,8 @@ double f2d(Fixed f)
 	return d;
 	}
 
+// a string routine or two
+
 char *csubstr(char *x,int first,int len)
 	{
 	char *result = malloc(len + 1);
@@ -164,6 +166,40 @@ char *csubstr(char *x,int first,int len)
 	result[i] = 0;
 	return result;
 	}
+
+int lastIndexOf(char *x,char y)
+{
+	int len = strlen(x);
+	int i;
+	for(i = len - 1; i >= 0; i--)
+		if(x[i] == y)
+			return i;
+	
+	return -1;
+}
+	
+char *fileExt(char *filename)
+{
+	if(!filename)
+		return "";
+	int theDot = lastIndexOf(filename,'.');
+	if(theDot < 0)
+		return "";
+	else return filename + theDot + 1;
+}
+
+int stringsEqual(char *s1,char *s2)
+{
+	if(!s1 || !s2)
+		return 0;
+
+	while(*s1 || *s2)
+		if(*s1++ != *s2++)
+			return 0;
+
+	return 1;
+}
+
 
 
 // +--------------------------------

@@ -62,6 +62,12 @@ OSType c2o(char *c);
 Fixed d2f(double d);
 double f2d(Fixed f);
 
+char *csubstr(char *x,int first,int len);
+int lastIndexOf(char *x,char y);
+char *fileExt(char *filename);
+int stringsEqual(char *s1,char *s2);
+
+
 int nr_find_arg(int argc,char *argv[],char *argname,int *value_int_out,char **value_string_out);
 
 // | variations on find arg which return values or default value

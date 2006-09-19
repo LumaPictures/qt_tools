@@ -121,6 +121,8 @@ int main(int argc,char *argv[])
 
 	if(nr_find_arg(argc,argv,"type",&ai,&component_type_string))
 		component_type = c2o(component_type_string);
+	else if(nr_find_arg(argc,argv,"1",&ai,&component_type_string))
+		component_type = c2o(component_type_string);
 
 	show_type_hex = nr_find_arg_int(argc,argv,"showhex",0,show_type_hex);
 	list_components(component_type,show_type_hex);

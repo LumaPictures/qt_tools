@@ -352,7 +352,7 @@ char *r_get_component_name(OSType ct,OSType cst,OSType cmfr)
 	GetComponentInfo(co,&cd,component_name_h,0,0);
 	if(!component_name_h)
 		return "-";
-	return p2c(*component_name_h);
+	return p2c((StringPtr)*component_name_h);
 	}
 
 int r_print_sample_description(s_track_info *tinfo,int sample_description_index)
