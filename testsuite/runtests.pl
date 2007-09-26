@@ -323,7 +323,11 @@ sub testOddSequenceRates()
            my $num = $2;
            my $den = $3;
 
-           my $reportedMediaDuration = $den / $num;
+           my $reportedMediaDuration = "none";
+           if($num != 0)
+           {
+             $reportedMediaDuration = $den / $num;
+           }
            assertEquals("media frame fraction [$mediaDurationInfo]",$rate,$reportedMediaDuration);
         }
         else
@@ -335,20 +339,33 @@ sub testOddSequenceRates()
 
 sub testExporterSelecting()
 {
+# make sure we auto-select the exporter & stuff just from the file suffix
 	foreach my $try (
 			"aif,AIFF,soun",
 			"aiff,AIFF,soun",
 			"dv,dvc!,appl",
+			"jpg,grex,appl",
 			"mp3,mp3,PYEh",
-			"wav,WAVE,soun",
-			"mp4,mpg4,appl")
+			"wav,WAVE,soun"
+			# "mp4,mpg4,appl"
+            # sadly we dont check mp4, because it forces us to see a dialog.
+            )
 	{
 		my ($extension,$subtype,$mfr) = split(/,/,$try);
 		my $resultFile = "testoutput/fooxport.$extension";
-		my $assns = snagParseableOutput("${appsLoc}qt_export $sweepMov --duration=0,.1 $resultFile");
+        my $duration = "--duration=0,.1";
+        if($extension eq "jpg")
+        {
+            $duration = "";  # a duration on jpg would cause an image sequence. we want 1 file.
+        }
+        my $cmd = "${appsLoc}qt_export $sweepMov $duration $resultFile";
+        print "cmd = $cmd\n";
+		my $assns = snagParseableOutput("$cmd");
 		assertEq("choosing exporter subtype for $extension",$subtype,$$assns{exporter_subtype});
 		assertEq("choosing exporter mfr for $extension",$mfr,$$assns{exporter_mfr});
-		assertFileExists("$resultFile");
+		assertFileExists($resultFile);
+        $assns = getQTInfo($resultFile);
+        assertEq("qtinfo reading movie",$resultFile,$$assns{movie_name});
 	}
 }
 

@@ -103,9 +103,12 @@ typedef struct
 	char *export_movie_name;
 
 	// --loadsettings=, --dodialog, --savesettings=
+    QTAtomContainer settings; // sometimes we preload this a bit.
 	char *load_settings; // atom container as file
 	int do_dialog;       // if so, do the QuickTime exporter dialog
 	char *save_settings;
+    int forced_duration; // some export guesses will FORCE the duration to be small, for single frame out.
+    int forced_dialog;
 
 	// --exporter=subtype,mfr (default MooV,appl)
 	OSType exporter_subtype;
@@ -392,16 +395,51 @@ go_home:
 	}
 
 /*
- * Assign a reasonable exporter type & subtype.
+ * Assign a reasonable exporter type & subtype,
+ * based on the output file extension.
  */
 
-#define EXTMAP(_ext,_subtype,_mfr) \
-	if(stringsEqual(ext,_ext)) \
-	{ \
-		ss->exporter_subtype = _subtype; \
-		ss->exporter_mfr = _mfr; \
-	}
+static int forceDoDialog(qte_parameter_settings *ss)
+{
+    ss->forced_dialog = 1;
+}
 
+static int makeJpegSettings(qte_parameter_settings *ss)
+{
+    //    + sean[1]: (3 children)
+    //    + .time[1]: (1 children)
+    //    + ..fps [1]: 00 00 00 00                                     | ....
+    //    + .ftyp[1]: 4a 50 45 47                                     | JPEG
+    //    + ." "?[1]: 01                                              | .    
+    QTAtomContainer js;
+    OSErr err;
+    err = QTNewAtomContainer(&js);
+    obailerr(err,"Could not create atom container");
+    nr_insert_deep_atom_data(js,"timefps ",4,"\0\0\0\0");
+    nr_insert_deep_atom_data(js,"ftyp",4,"JPEG");
+    nr_insert_deep_atom_data(js,"\" \"?",1,"\0");
+    ss->settings = js;
+    ss->forced_duration = 1;
+go_home:
+        return err;
+}
+
+
+
+#define EXTMAP(_ext,_subtype,_mfr) \
+if(stringsEqual(ext,_ext)) \
+{ \
+    ss->exporter_subtype = _subtype; \
+		ss->exporter_mfr = _mfr; \
+}
+
+#define EXTMAP_AND_MORE(_ext,_subtype,_mfr,_doMore) \
+if(stringsEqual(ext,_ext)) \
+{ \
+    ss->exporter_subtype = _subtype; \
+		ss->exporter_mfr = _mfr; \
+        _doMore(ss); \
+}
 
 static void r_guess_exporter_subtype(qte_parameter_settings *ss)
 {
@@ -415,9 +453,12 @@ nr_printf(1,"ext is %s\n",ext);
 	EXTMAP("aiff",'AIFF','soun');
 	EXTMAP("dv",'dvc!','appl');
 	EXTMAP("wav",'WAVE','soun');
-	EXTMAP("mp4",'mpg4','appl');
+	EXTMAP_AND_MORE("mp4",'mpg4','appl',forceDoDialog);
 	EXTMAP("au",'ULAW','soun');
 	EXTMAP("avi",'VfW ','appl');
+	EXTMAP("bmp",'BMPf','....');
+    EXTMAP_AND_MORE("jpg",'grex','appl',makeJpegSettings);
+    
 
 		/*
 		 * The LAME mp3 encoder, 
@@ -454,6 +495,8 @@ int r_args_to_settings(int argc,char **argv,qte_parameter_settings *ssOut)
     ss.sequence_rate = -1;
     ss.b_supports_atoms = 1;
     ss.b_ignore_user_canceled = 0;
+    ss.forced_duration = 0;
+    ss.forced_dialog = 0;
 	
   	// |
 	// | needs two movie arguments to work... or none
@@ -468,6 +511,22 @@ int r_args_to_settings(int argc,char **argv,qte_parameter_settings *ssOut)
 	// | the right exporter based on the filename extension
 	// |
 	r_guess_exporter_subtype(&ss);
+
+    {
+        // if an exporter is spec'd on the command line,
+        // undo that nasty forced-duration from maybe jpg or still image stuff.
+        // or a duration
+        double y = nr_find_arg_double(argc,argv,"duration",1,ss.end_time);
+        OSType z = nr_find_arg_ostype(argc,argv,"exporter",0,0);
+        char *z3 = 0;
+        nr_find_arg(argc,argv,"loadsettings",0,&z3);
+        
+        if(z || y)
+            ss.forced_duration = 0;
+
+        if(z || z3)
+            ss.forced_dialog = 0;
+    }
 
 
 	if(ss.source_movie_name && !ss.export_movie_name)
@@ -637,11 +696,14 @@ int r_args_to_settings(int argc,char **argv,qte_parameter_settings *ssOut)
 	ss.start_time = nr_find_arg_double(argc,argv,"duration",0,ss.start_time);
 	ss.end_time = nr_find_arg_double(argc,argv,"duration",1,ss.end_time);
 
-	if(ss.end_time == 0)
+	if(ss.end_time <= ss.start_time)
 		{
 		ss.end_time = ss.start_time;
 		ss.start_time = 0;
 		}
+    
+    if(ss.forced_duration > 0)
+        ss.end_time = ss.start_time;
 
 go_home:
 	if(!err)
@@ -787,11 +849,14 @@ nr_printf(2,"# doMovieExport ss frame_rate = %f\n",ss->frame_rate); //!!!
 		start_time = (int)(ss->start_time * movie_time_scale);
 		duration = (int)((ss->end_time - ss->start_time) * movie_time_scale);
 
-		if(duration == 0)
+		if(duration <= 0)
 			{
 			start_time = 0;
 			duration = GetMovieDuration(mo);
 			}
+        
+        if(ss->forced_duration)
+            duration = 1;
 
 		// |
 		// | Some abort conditions...
@@ -869,7 +934,6 @@ main(int argc,char **argv)
 	ComponentInstance ci;
 	int found_it = 0;
 	qte_parameter_settings ss = {0};
-	QTAtomContainer ac = 0;
 
 	setbuf(stdout,0);
 
@@ -941,19 +1005,19 @@ main(int argc,char **argv)
 
         if(ss.load_settings)
             {
-            err = nr_file_to_atom_container(ss.load_settings,&ac);
+            err = nr_file_to_atom_container(ss.load_settings,&ss.settings);
             obailerr(err,nr_sprintf("could not load settings file %s",ss.load_settings));
 
-            err = r_atom_container_to_parameter_settings(ac,&ss);
+            err = r_atom_container_to_parameter_settings(ss.settings,&ss);
             obailerr(err,"could not extract settings from settings file atom");
             }
-        else
+        else if(!ss.settings)
             {
             // |
             // | otherwise, get a starter-atom from the exporter component
             // |
 
-            err = MovieExportGetSettingsAsAtomContainer(ci,&ac);
+            err = MovieExportGetSettingsAsAtomContainer(ci,&ss.settings);
             obailerr(err,"Initial MovieExportGetSettingsAsAtomContainer");
             }
 
@@ -969,15 +1033,15 @@ main(int argc,char **argv)
 
         if((!ss.load_settings) && (!ss.do_dialog))  // this is the test
             {
-            err = r_parameter_settings_atop_atom_container(&ss,ac);
+            err = r_parameter_settings_atop_atom_container(&ss,ss.settings);
             obailerr(err,"r_parameter_settings_atop_atom_container");
             }
 
-        err = MovieExportSetSettingsFromAtomContainer(ci,ac);
+        err = MovieExportSetSettingsFromAtomContainer(ci,ss.settings);
         obailerr(err,"MovieExportSetSettingsFromAtomContainer");
         } // b_supports_atoms
 
-	if(ss.do_dialog)
+	if(ss.do_dialog || ss.forced_dialog)
 		{
 		Boolean canceled;
 
@@ -1018,24 +1082,24 @@ main(int argc,char **argv)
 
     if(ss.b_supports_atoms)
         {
-        QTDisposeAtomContainer(ac);
-        err = MovieExportGetSettingsAsAtomContainer(ci,&ac);
+        QTDisposeAtomContainer(ss.settings);
+        err = MovieExportGetSettingsAsAtomContainer(ci,&ss.settings);
         obailerr(err,"MovieExportGetSettingsAsAtomContainer");
 
         // | one last conversion back to ss, for printing
 
-        r_atom_container_to_parameter_settings(ac,&ss);
+        r_atom_container_to_parameter_settings(ss.settings,&ss);
 
         // | and maybe save those settings.
 
         if(ss.save_settings)
             {
-            err = nr_atom_container_to_file(ac,ss.save_settings);
+            err = nr_atom_container_to_file(ss.settings,ss.save_settings);
             obailerr(err,nr_sprintf("could not save settings file %s",ss.save_settings));
             }
 
-        QTDisposeAtomContainer(ac);
-        ac = 0;
+// ??        QTDisposeAtomContainer(ss.settings);
+// ??        ss.settings = 0;
         } // b_supports_atoms
 
 	r_print_parameter_settings(&ss);

@@ -184,6 +184,23 @@ maintaining the source movie's frame rate, and one key frame for
 every sixty frames. The default audio compressor is raw ('twos')
 set to 44100 samples per second, stereo.
 
+=item qt_export sourcemovie.mov video.dv
+
+Convert a QuickTime movie to a digital video stream.
+
+=item qt_export sourcemovie.dv video.mp4 --dodialog
+
+Convert a digital video stream to an MPEG 4 file, letting you 
+choose the exact settings in an export settings dialog.
+
+=item qt_export sourcemovie.mov soundfile.aif
+
+=item qt_export infile.wav outfile.mp3
+
+=item qt_export infile.mp3 outfile.au
+
+Audio formats can be freely interconverted. If the source is a movie, the audio will be extracted.
+
 =item qt_export --sequencerate=15 sourcepicture_123.jpg exportmovie.mov
 
 Look for files named sourcepicture_000.jpg, sourcepicture_001, ..., sourcepicture_999.jpg,
