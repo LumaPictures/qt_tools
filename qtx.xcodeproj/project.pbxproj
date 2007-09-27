@@ -78,6 +78,7 @@
 		EECAF9760ABBDD4200DB981D /* qt_info_example.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html; path = qt_info_example.html; sourceTree = "<group>"; };
 		EECAF9770ABBDD4200DB981D /* qt_proofsheet_example_1.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html; path = qt_proofsheet_example_1.html; sourceTree = "<group>"; };
 		EECAF9780ABBDD4200DB981D /* qt_proofsheet_example_2.html */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.html; path = qt_proofsheet_example_2.html; sourceTree = "<group>"; };
+		EEFAFABD0CAB760E00CE509F /* settingsToC.pl */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.perl; path = settingsToC.pl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -129,6 +130,7 @@
 		EECAF9680ABBDD4200DB981D /* tools */ = {
 			isa = PBXGroup;
 			children = (
+				EEFAFABD0CAB760E00CE509F /* settingsToC.pl */,
 				EECAF9690ABBDD4200DB981D /* bump_version.pl */,
 				EECAF96A0ABBDD4200DB981D /* misc.pm */,
 				EECAF96B0ABBDD4200DB981D /* munge_and_move.pl */,
