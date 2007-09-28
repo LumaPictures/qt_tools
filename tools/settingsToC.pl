@@ -8,7 +8,8 @@ my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
        $atime,$mtime,$ctime,$blksize,$blocks)
                   = stat($filename);
 
-print "size = $size\n";
+#print "// size = $size\n";
+print "\n\n";
 
 open F, $filename;
 my @bytes;
@@ -18,6 +19,14 @@ for(my $i = 0; $i < $size; $i++)
     read F,$byte,1;
     #print $byte;
     $bytes[$i] = $byte;
+}
+
+if(!$varname)
+{
+    if($filename =~ /.*\/(.*)\.st/)
+    {
+        $varname = $1;
+    }
 }
 
 print "unsigned char $varname\[$size] = { // from $filename\n";
@@ -45,3 +54,6 @@ for(my $base = 0; $base < $size; $base += $step)
     print "\n";
 }
 print "    };\n";
+print "\n";
+
+# the end

@@ -18,6 +18,8 @@
 #define k_string_size 1024
 
 
+#include "settings.c" // definitions of all the atom presets
+
 
 // |
 // | The order for the parameters stacked up is like so:
@@ -109,6 +111,7 @@ typedef struct
 	char *save_settings;
     int forced_duration; // some export guesses will FORCE the duration to be small, for single frame out.
     int forced_dialog;
+    int dont_put_params_atop_atom;
 
 	// --exporter=subtype,mfr (default MooV,appl)
 	OSType exporter_subtype;
@@ -404,6 +407,21 @@ static int forceDoDialog(qte_parameter_settings *ss)
     ss->forced_dialog = 1;
 }
 
+static int makeMpg4Settings(qte_parameter_settings *ss)
+{
+    QTAtomContainer ac = (QTAtomContainer)NewHandleClear(sizeof(mpg4));
+    memcpy(*(void **)ac,mpg4,sizeof(mpg4));
+    ss->settings = ac;
+    ss->dont_put_params_atop_atom = 1;
+}
+
+static int makeAviSettings(qte_parameter_settings *ss)
+{
+    QTAtomContainer ac = (QTAtomContainer)NewHandleClear(sizeof(avi));
+    memcpy(*(void **)ac,avi,sizeof(avi));
+    ss->settings = ac;
+    ss->dont_put_params_atop_atom = 1;
+}
 static int makeJpegSettings(qte_parameter_settings *ss)
 {
     //    + sean[1]: (3 children)
@@ -420,6 +438,7 @@ static int makeJpegSettings(qte_parameter_settings *ss)
     nr_insert_deep_atom_data(js,"\" \"?",1,"\0");
     ss->settings = js;
     ss->forced_duration = 1;
+    ss->dont_put_params_atop_atom = 1;
 go_home:
         return err;
 }
@@ -453,9 +472,9 @@ nr_printf(1,"ext is %s\n",ext);
 	EXTMAP("aiff",'AIFF','soun');
 	EXTMAP("dv",'dvc!','appl');
 	EXTMAP("wav",'WAVE','soun');
-	EXTMAP_AND_MORE("mp4",'mpg4','appl',forceDoDialog);
+	EXTMAP_AND_MORE("mp4",'mpg4','appl',makeMpg4Settings);
 	EXTMAP("au",'ULAW','soun');
-	EXTMAP("avi",'VfW ','appl');
+	EXTMAP_AND_MORE("avi",'VfW ','appl',makeAviSettings);
 	EXTMAP("bmp",'BMPf','....');
     EXTMAP_AND_MORE("jpg",'grex','appl',makeJpegSettings);
     
@@ -1031,8 +1050,10 @@ main(int argc,char **argv)
         // | We trust completely the dialog or stashed settings.
         // |
 
-        if((!ss.load_settings) && (!ss.do_dialog))  // this is the test
+        if((!ss.load_settings) && (!ss.do_dialog) && (!ss.dont_put_params_atop_atom))  // this is the test
             {
+            // really, this is the exception -- being able to manipulate the
+            // exporter settings atom. probably only vaguely feasible for -->.mov.
             err = r_parameter_settings_atop_atom_container(&ss,ss.settings);
             obailerr(err,"r_parameter_settings_atop_atom_container");
             }

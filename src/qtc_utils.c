@@ -98,9 +98,22 @@ char *o2c(OSType o)
 	char *c = malloc(5);
 	int i;
 
-	memcpy(c,&o,4);
+//	memcpy(c,&o,4); memcpy bad -- endianness for a char sequence wont go.
 	c[4] = 0;
+    for(i = 3; i>=0; i--) 
+    {
+        // endian-neutral fix by:
+        // Date: Fri, 17 Aug 2007 16:54:42 +0100
+        // From: Brian Foley <bfoley@compsoc.nuigalway.ie>
 
+        c[i] = o & 0xff;
+        o = o >> 8;
+        if(c[i] < 0x20 || c[i] > 0x7e)
+            c[i] = '.';
+    }
+        
+    
+    
 	for(i = 0; i < 4; i++)
 		if(c[i] < 0x20 || c[i] > 0x7e)
 			c[i] = '.';
@@ -1222,6 +1235,150 @@ void nr_filename_to_sequence_stuff(char *filename,sequence_stuff *seqstuff_out)
 char *nr_sequence_stuff_to_filename(sequence_stuff *seqstuff,int index)
 {
 	return nr_sprintf(seqstuff->fmt,seqstuff->beforeNumerals,index,seqstuff->afterNumerals);
+}
+
+
+
+int r_find_child_depth(QTAtomContainer ac,QTAtom a,int level)
+{
+	int child_count;
+	QTAtom ch;
+	int result = level;
+	int err = level;
+	int i;
+    
+	child_count = QTCountChildrenOfType(ac,a,0);
+	ch = 0;
+	for(i = 0; i < child_count; i++)
+    {
+		err = QTNextChildAnyType(ac,a,ch,&ch);
+		bailerr(err,"could not get next child");
+		err = r_find_child_depth(ac,ch,level + 1);
+		if(err > result)
+			result = err;
+    }
+    
+go_home:
+        if(err < 0)
+            return err;
+    
+	return result;
+}
+
+int r_dump_hex(int indent,int size,unsigned char *p)
+{
+	int bytes_per_row = 16;
+	int show;
+	int i;
+	int err = 0;
+    
+	while(size)
+    {
+		show = size;
+		if(show > bytes_per_row)
+			show = bytes_per_row;
+        
+		size = size - show;  // how many left after this?
+        
+		for(i = 0; i < show; i++)
+			printf("%02x ",p[i]);
+		for(i = i; i < bytes_per_row; i++)
+			printf("   ");
+		printf("| ");
+        
+		for(i = 0; i < show; i++)
+			printf("%c",(p[i] < 0x20 || p[i] > 0x7e) ? '.' : p[i]);
+        
+		printf("\n");
+		p = p + show;
+		if(size)
+        {
+			printf("+ ");
+			for(i = 0; i < indent; i++)
+				printf(" ");
+        }
+    }
+    
+	return err;
+}
+
+
+int r_show_atom_level(QTAtomContainer ac,QTAtom a,int indent)
+{
+	QTAtomType a_type;
+	QTAtomID a_id;
+	QTAtom ch;
+	QTAtomID ch_id;
+	int child_count;
+	int i;
+	int err = 0;
+	Ptr a_ptr;
+	long a_size;
+    
+	err = QTGetAtomTypeAndID(ac,a,&a_type,&a_id);
+	bailerr(err,"could not get atom type");
+    
+	child_count = QTCountChildrenOfType(ac,a,0);
+    
+	// |
+	// | maybe do hexdump, maybe walk children
+	// | either way, indent and show type[id]
+	// |
+    
+	printf("+ ");
+	for(i = 0; i < indent; i++)
+		printf(".");
+	printf("%s[%d]: ",o2c(a_type),a_id);
+    
+	if(child_count == 0)
+    {
+		err= QTGetAtomDataPtr(ac,a,&a_size,&a_ptr);
+		bailerr(err,"could not get atom data ptr");
+		if(a_size && a_ptr)
+        {
+			err = r_dump_hex(indent + 9,a_size,(unsigned char *)a_ptr);
+			bailerr(err,"could not dump hex");
+        }
+		else
+			printf("-\n");
+    }
+	else
+		printf("(%d children)\n",child_count);
+	
+	ch = 0;
+	for(i = 1; i <= child_count; i++)
+    {
+		err = QTNextChildAnyType(ac,a,ch,&ch);
+		bailerr(err,nr_sprintf("could not load child %d",ch_id));
+        
+		err = r_show_atom_level(ac,ch,indent+1);
+		bailerr(err,nr_sprintf("could not show level %d",indent+1));
+    }
+    
+    
+go_home:
+        return err;
+}
+
+int r_show_atom_contents(QTAtomContainer ac)
+{
+	int err = 0;
+	int depth;
+    
+	err = QTLockContainer(ac);
+	bailerr(err,"could not lock container");
+    
+	depth = r_find_child_depth(ac,0,0);
+	nr_print_int("depth",depth);
+    
+	nr_print_int("file size",GetHandleSize(ac));
+    
+	err = r_show_atom_level(ac,0,0);
+	bailerr(err,nr_sprintf("could now show atom"));
+    
+go_home:
+        QTUnlockContainer(ac);
+	return err;
 }
 
 

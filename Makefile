@@ -5,6 +5,7 @@
 # a set of handy QuickTime command line tools
 # 2003 March
 # 2006 March...
+# 2007 September...
 #
 # REQUIREMENTS:
 #
@@ -55,6 +56,7 @@ UTILS_OBJECTS = \
 	$(OBJ)/rationalize.o
 
 INCLUDES = \
+	$(SRC)/settings.c \
 	$(SRC)/qtc_utils.h \
 	$(SRC)/rationalize.h \
 	$(OBJ)/qtc_manpages.h \
@@ -215,6 +217,17 @@ $(OBJ)/qtc_manpages.h : $(MANPAGES) $(HTML)
 	@echo "// end of file" >> $(OBJ)/qtc_manpages.h
 
 
+SETTINGSES = $(SRC)/settings/mpg4.st $(SRC)/settings/avi.st
+
+$(SRC)/settings.c : $(SETTINGSES) $(MAKEFILE) $(TOOLS)/settingsToC.pl
+	$(E) Generating $<
+	@echo "// file: settings.c `date`" > $(SRC)/settings.c
+	@for sf in $(SETTINGSES) ;\
+	do \
+		echo "turning $$sf into C code" ;\
+		$(TOOLS)/settingsToC.pl $$sf >> $(SRC)/settings.c ;\
+	done
+
 
 $(OBJ)/%.o : $(SRC)/%.c $(INCLUDES)
 	$(FOLDERS)
@@ -243,6 +256,7 @@ qt_thing : $(APP)/qt_thing
 clean :
 	$(E) cleaning
 	rm -rf $(BUILD) $(OBJ) $(MAN) $(APP) $(SOURCEDIST) $(HTML)
+	rm -f $(SRC)/settings.c
 
 source_to_release : $(SUITE)
 	$(FOLDERS)

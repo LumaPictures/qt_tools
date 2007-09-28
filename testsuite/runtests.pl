@@ -337,6 +337,24 @@ sub testOddSequenceRates()
 	}
 }
 
+sub testDirectoryWithNumbers()
+{
+    mkdir("testoutput/frames4u/");
+    assertTrue("dir not made",-d "testoutput/frames4u/");
+
+    my $cmd = "${appsLoc}qt_export $sweepMov testoutput/frames4u/sweep90frames.jpg --duration=0,1.5";
+    print "cmd = $cmd\n";
+	my $assns = snagParseableOutput("$cmd");
+
+    my $cmd = "${appsLoc}qt_export testoutput/frames4u/sweep90frames02.jpg testoutput/sweepframes.mov --sequencerate=60";
+    print "cmd = $cmd\n";
+	my $assns = snagParseableOutput("$cmd");
+    my $qtInfo = getQTInfo("testoutput/sweepframes.mov");
+    # make sure we got all the frame -- even though there was a number in the directory
+    my $duration = $$qtInfo{movie_duration};
+    assertEquals("sequence with tricky numbers in file name",1.5,$duration);
+}
+
 sub testExporterSelecting()
 {
 # make sure we auto-select the exporter & stuff just from the file suffix
@@ -346,8 +364,9 @@ sub testExporterSelecting()
 			"dv,dvc!,appl",
 			"jpg,grex,appl",
 			"mp3,mp3,PYEh",
-			"wav,WAVE,soun"
-			# "mp4,mpg4,appl"
+			"wav,WAVE,soun",
+			"mp4,mpg4,appl",
+            "avi,VfW,appl"
             # sadly we dont check mp4, because it forces us to see a dialog.
             )
 	{
@@ -408,6 +427,7 @@ sub main(@)
 	else
 	{	
 		testHaveTools();
+        testDirectoryWithNumbers();
 		testExporterSelecting();
         testOddSequenceRates();
 		test6();

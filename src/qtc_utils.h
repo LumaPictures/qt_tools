@@ -153,5 +153,8 @@ typedef struct
 void nr_filename_to_sequence_stuff(char *filename,sequence_stuff *seqstuff_out);
 char *nr_sequence_stuff_to_filename(sequence_stuff *seqstuff,int index);
 
+// | the meat of qt_atom...
+int r_show_atom_contents(QTAtomContainer ac);
+
 
 // end of file
