@@ -415,6 +415,14 @@ static int makeMpg4Settings(qte_parameter_settings *ss)
     ss->dont_put_params_atop_atom = 1;
 }
 
+static int makeM4aSettings(qte_parameter_settings *ss)
+{
+    QTAtomContainer ac = (QTAtomContainer)NewHandleClear(sizeof(m4a));
+    memcpy(*(void **)ac,m4a,sizeof(m4a));
+    ss->settings = ac;
+    ss->dont_put_params_atop_atom = 1;
+}
+
 static int makeAviSettings(qte_parameter_settings *ss)
 {
     QTAtomContainer ac = (QTAtomContainer)NewHandleClear(sizeof(avi));
@@ -422,6 +430,7 @@ static int makeAviSettings(qte_parameter_settings *ss)
     ss->settings = ac;
     ss->dont_put_params_atop_atom = 1;
 }
+
 static int makeJpegSettings(qte_parameter_settings *ss)
 {
     //    + sean[1]: (3 children)
@@ -473,6 +482,7 @@ nr_printf(1,"ext is %s\n",ext);
 	EXTMAP("dv",'dvc!','appl');
 	EXTMAP("wav",'WAVE','soun');
 	EXTMAP_AND_MORE("mp4",'mpg4','appl',makeMpg4Settings);
+	EXTMAP_AND_MORE("m4a",'mpg4','appl',makeM4aSettings); // just like mp4, but with audio only.
 	EXTMAP("au",'ULAW','soun');
 	EXTMAP_AND_MORE("avi",'VfW ','appl',makeAviSettings);
 	EXTMAP("bmp",'BMPf','....');

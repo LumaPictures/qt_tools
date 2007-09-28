@@ -217,7 +217,7 @@ $(OBJ)/qtc_manpages.h : $(MANPAGES) $(HTML)
 	@echo "// end of file" >> $(OBJ)/qtc_manpages.h
 
 
-SETTINGSES = $(SRC)/settings/mpg4.st $(SRC)/settings/avi.st
+SETTINGSES = $(SRC)/settings/mpg4.st $(SRC)/settings/avi.st $(SRC)/settings/m4a.st
 
 $(SRC)/settings.c : $(SETTINGSES) $(MAKEFILE) $(TOOLS)/settingsToC.pl
 	$(E) Generating $<

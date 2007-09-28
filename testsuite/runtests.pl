@@ -366,8 +366,8 @@ sub testExporterSelecting()
 			"mp3,mp3,PYEh",
 			"wav,WAVE,soun",
 			"mp4,mpg4,appl",
+			"m4a,mpg4,appl",   # an audio-only mpeg-4 file
             "avi,VfW,appl"
-            # sadly we dont check mp4, because it forces us to see a dialog.
             )
 	{
 		my ($extension,$subtype,$mfr) = split(/,/,$try);
@@ -386,6 +386,16 @@ sub testExporterSelecting()
         $assns = getQTInfo($resultFile);
         assertEq("qtinfo reading movie",$resultFile,$$assns{movie_name});
 	}
+}
+
+sub testM4aAudioOnly()
+{
+    my $resultFile = "testoutput/sweepmoveAudio.m4a";
+    my $cmd = "${appsLoc}qt_export $sweepMov $resultFile";
+    print "cmd = $cmd\n";
+    my $assns = snagParseableOutput("$cmd");
+    my $qtInfo = getQTInfo($resultFile);
+	assertEq("audio has empty movie_box pls?","(0,0,0,0)",$$qtInfo{movie_box});
 }
 
 sub main(@)
@@ -411,7 +421,7 @@ sub main(@)
 	#print $$qtInfo{movie_box};
 
     system("mkdir -p testoutput");
-	system("rm -f testoutput/* testoutput/.Q*");
+	system("rm -rf testoutput/* testoutput/.Q*");
 
 	my $tests = $$opts{"testlist"};
 	if($tests)
@@ -427,6 +437,7 @@ sub main(@)
 	else
 	{	
 		testHaveTools();
+        testM4aAudioOnly();
         testDirectoryWithNumbers();
 		testExporterSelecting();
         testOddSequenceRates();
@@ -443,7 +454,7 @@ sub main(@)
     print "$assertCount assertions correctly assertively asserted.\n\n";
     if(!$dontdelete)
         {
-	    system("rm testoutput/*");
+	    system("rm -rf testoutput/*");
         print "(deleted testoutput/*)\n";
         }
 }
