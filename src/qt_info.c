@@ -422,6 +422,10 @@ int r_print_track_info(s_track_info *tinfo,s_movie_info *movie_info)
 
 	if(tinfo->has_media)
 		{
+        double duration = (double) tinfo->media_duration / (double) tinfo->media_time_scale;
+        double averageSampleRate = (double)tinfo->media_sample_count / duration;
+        char *averageSampleRateS = nr_sprintf("%.2f",averageSampleRate);
+
 		nr_print_time("media duration",tinfo->media_duration,tinfo->media_time_scale);
 		nr_print_int("media language",tinfo->media_language);
 		nr_print_int("media quality",tinfo->media_quality);
@@ -436,6 +440,7 @@ int r_print_track_info(s_track_info *tinfo,s_movie_info *movie_info)
 		nr_print_int("media description count",tinfo->media_sample_description_count);
 		nr_print_int("media sample count",tinfo->media_sample_count);
 		nr_print_int("media sync sample count",tinfo->media_sync_sample_count);
+		nr_print_info("media average sample rate",averageSampleRateS);
 		nr_print_int("media preferred chunk size",tinfo->media_preferred_chunk_size);
 
         nr_print_info("media file name",p2c(tinfo->media_file_name));

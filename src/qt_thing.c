@@ -39,7 +39,7 @@ void usage(void)
 	U("which lists components installed")
 	U("in your system")
 	Uu
-	U("usage: qt_thing [--type=<type>]")
+	U("usage: qt_thing [--type=<type>] [--showhex]")
 	Uu
 	U("\"qt_thing --man | more\" will tell you the");
 	U("same thing with a lot more words.");

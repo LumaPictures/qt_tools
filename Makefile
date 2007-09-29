@@ -56,10 +56,10 @@ UTILS_OBJECTS = \
 	$(OBJ)/rationalize.o
 
 INCLUDES = \
-	$(SRC)/settings.c \
 	$(SRC)/qtc_utils.h \
 	$(SRC)/rationalize.h \
 	$(OBJ)/qtc_manpages.h \
+	$(OBJ)/settings.c \
 	$(SRC)/version.h
 
 SUITE = qt_export qt_info qt_thing qt_atom qt_proofsheet
@@ -195,7 +195,7 @@ $(HTML)/man/%.html : $(SRC)/%.pl
 # strings of printf() this and thats.
 #
 
-$(OBJ)/qtc_manpages.h : $(MANPAGES) $(HTML)
+$(OBJ)/qtc_manpages.h : $(MANPAGES) $(HTML) $(MAKEFILE)
 	$(FOLDERS)
 	$(E) Building Man Pages
 
@@ -206,9 +206,10 @@ $(OBJ)/qtc_manpages.h : $(MANPAGES) $(HTML)
 	do \
 		mp0=`basename $$mp .pl` ;\
 		mp1=$$mp0.1 ;\
+		echo "/* */" >> $(OBJ)/qtc_manpages.h ;\
 		echo "#define print_$${mp0}_man \\" >> $(OBJ)/qtc_manpages.h ;\
 		pod2text $$mp | $(TOOLS)/text2printf.pl "   printf(" "); \\" >> $(OBJ)/qtc_manpages.h ;\
-		echo " " >>qtc_manpages.h ;\
+		echo " " >> $(OBJ)/qtc_manpages.h ;\
 		$(EE) Making $$mp1 ;\
 		make -s $(MAN)/man1/$$mp1 ;\
 		make -s $(HTML)/man/$$mp0.html ;\
@@ -217,15 +218,19 @@ $(OBJ)/qtc_manpages.h : $(MANPAGES) $(HTML)
 	@echo "// end of file" >> $(OBJ)/qtc_manpages.h
 
 
-SETTINGSES = $(SRC)/settings/mpg4.st $(SRC)/settings/avi.st $(SRC)/settings/m4a.st
+SETTINGSES = \
+	$(SRC)/settings/mpg4.st \
+	$(SRC)/settings/avi.st \
+	$(SRC)/settings/tga.st \
+	$(SRC)/settings/m4a.st
 
-$(SRC)/settings.c : $(SETTINGSES) $(MAKEFILE) $(TOOLS)/settingsToC.pl
+$(OBJ)/settings.c : $(SETTINGSES) $(MAKEFILE) $(TOOLS)/settingsToC.pl
 	$(E) Generating $<
-	@echo "// file: settings.c `date`" > $(SRC)/settings.c
+	@echo "// file: settings.c `date`" > $(OBJ)/settings.c
 	@for sf in $(SETTINGSES) ;\
 	do \
 		echo "turning $$sf into C code" ;\
-		$(TOOLS)/settingsToC.pl $$sf >> $(SRC)/settings.c ;\
+		$(TOOLS)/settingsToC.pl $$sf >> $(OBJ)/settings.c ;\
 	done
 
 
@@ -256,7 +261,6 @@ qt_thing : $(APP)/qt_thing
 clean :
 	$(E) cleaning
 	rm -rf $(BUILD) $(OBJ) $(MAN) $(APP) $(SOURCEDIST) $(HTML)
-	rm -f $(SRC)/settings.c
 
 source_to_release : $(SUITE)
 	$(FOLDERS)

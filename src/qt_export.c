@@ -136,6 +136,10 @@ typedef struct
 	// --duration=[start_time,]end_time
 	double start_time; // seconds
 	double end_time; // seconds, 0 means whole time
+    
+    // --size=width[,height]
+    long width;
+    long height;
 
 	int replace_file; // 1 means ok to delete existing file of same name
 	int verbosity; // 0 silent, 1 normal, 2 verbose, 3 debuggery
@@ -178,6 +182,11 @@ void r_print_parameter_settings(qte_parameter_settings *ss)
 	nr_print_ostype("exporter mfr",ss->exporter_mfr);
 	nr_print_cr();
 	nr_print_d_time_range("duration",ss->start_time,ss->end_time);
+    
+    if(ss->width > 0)
+    {
+        nr_print_dims("size",ss->width,ss->height);
+    }
 
 	
 	if(ss->video_compressor != '0   ' || ss->exporter_video)
@@ -280,6 +289,8 @@ int r_atom_container_to_parameter_settings(QTAtomContainer ac,qte_parameter_sett
 // | other  means that's the compressor we want.
 // |
 // | similarly for the audio compressor
+// |
+// | dvb07 -- this only works for movie-exporters...
 
 int r_parameter_settings_atop_atom_container(qte_parameter_settings *ss,QTAtomContainer ac)
 	{
@@ -320,6 +331,20 @@ int r_parameter_settings_atop_atom_container(qte_parameter_settings *ss,QTAtomCo
 		err = nr_insert_deep_atom_data(ac,"videdrat",sizeof(sdr),&sdr);
 		bailerr(err,"could not create settings atoms");
 
+        // I saw this in quite a few movie setings files:
+        // vide/wdth gets 16.16 width, 100 is 00 64 00 00
+        // vide/hegt gets 16.16 height
+        // isiz/iwdt gets 32 bit width, 100 is 00 00 00 64
+        // isiz/ihgt gets 32 bit height
+        if(ss->width > 0 && ss->height > 0)
+        {
+            nr_insert_deep_atom_long(ac,"videwdth",ss->width << 16);
+            nr_insert_deep_atom_long(ac,"videhegt",ss->height << 16);
+            nr_insert_deep_atom_long(ac,"isiziwdt",ss->width);
+            nr_insert_deep_atom_long(ac,"isizihgt",ss->height);
+        }
+        
+        
 		long mfr = 0; // TRY IT! 2006.03.07
 		err = nr_insert_deep_atom_data(ac,"videcmfr",sizeof(mfr),&mfr);
 
@@ -431,25 +456,43 @@ static int makeAviSettings(qte_parameter_settings *ss)
     ss->dont_put_params_atop_atom = 1;
 }
 
-static int makeJpegSettings(qte_parameter_settings *ss)
+static int makeGrexAtomAndPokeSettings(OSType kind,qte_parameter_settings *ss)
 {
     //    + sean[1]: (3 children)
     //    + .time[1]: (1 children)
     //    + ..fps [1]: 00 00 00 00                                     | ....
     //    + .ftyp[1]: 4a 50 45 47                                     | JPEG
     //    + ." "?[1]: 01                                              | .    
-    QTAtomContainer js;
-    OSErr err;
-    err = QTNewAtomContainer(&js);
+    QTAtomContainer js = 0;
+    int err = QTNewAtomContainer(&js);
     obailerr(err,"Could not create atom container");
     nr_insert_deep_atom_data(js,"timefps ",4,"\0\0\0\0");
-    nr_insert_deep_atom_data(js,"ftyp",4,"JPEG");
+    nr_insert_deep_atom_long(js,"ftyp",kind);
     nr_insert_deep_atom_data(js,"\" \"?",1,"\0");
     ss->settings = js;
     ss->forced_duration = 1;
     ss->dont_put_params_atop_atom = 1;
 go_home:
         return err;
+}
+
+static int makeJpegSettings(qte_parameter_settings *ss)
+{
+    return makeGrexAtomAndPokeSettings('JPEG',ss);
+}
+
+static int makePngSettings(qte_parameter_settings *ss)
+{
+    return makeGrexAtomAndPokeSettings('PNGf',ss);
+}
+
+static int makeTgaSettings(qte_parameter_settings *ss)
+{
+    QTAtomContainer ac = (QTAtomContainer)NewHandleClear(sizeof(tga));
+    memcpy(*(void **)ac,tga,sizeof(tga));
+    ss->settings = ac;
+    ss->dont_put_params_atop_atom = 1;
+    ss->forced_duration = 1;
 }
 
 
@@ -459,6 +502,7 @@ if(stringsEqual(ext,_ext)) \
 { \
     ss->exporter_subtype = _subtype; \
 		ss->exporter_mfr = _mfr; \
+    nr_printf(2,"# file ext is %s, guessing exporter %s:%s\n",_ext,o2c(ss->exporter_subtype),o2c(ss->exporter_mfr)); \
 }
 
 #define EXTMAP_AND_MORE(_ext,_subtype,_mfr,_doMore) \
@@ -467,6 +511,7 @@ if(stringsEqual(ext,_ext)) \
     ss->exporter_subtype = _subtype; \
 		ss->exporter_mfr = _mfr; \
         _doMore(ss); \
+    nr_printf(2,"# file ext is %s, guessing exporter %s:%s\n",_ext,o2c(ss->exporter_subtype),o2c(ss->exporter_mfr)); \
 }
 
 static void r_guess_exporter_subtype(qte_parameter_settings *ss)
@@ -475,18 +520,20 @@ static void r_guess_exporter_subtype(qte_parameter_settings *ss)
 	ss->exporter_mfr = 'appl';
 
 	char *ext = fileExt(ss->export_movie_name);
-nr_printf(1,"ext is %s\n",ext);
 
 	EXTMAP("aif",'AIFF','soun');
 	EXTMAP("aiff",'AIFF','soun');
 	EXTMAP("dv",'dvc!','appl');
 	EXTMAP("wav",'WAVE','soun');
+	EXTMAP("mp2",'MPEG',0);
 	EXTMAP_AND_MORE("mp4",'mpg4','appl',makeMpg4Settings);
 	EXTMAP_AND_MORE("m4a",'mpg4','appl',makeM4aSettings); // just like mp4, but with audio only.
 	EXTMAP("au",'ULAW','soun');
 	EXTMAP_AND_MORE("avi",'VfW ','appl',makeAviSettings);
 	EXTMAP("bmp",'BMPf','....');
     EXTMAP_AND_MORE("jpg",'grex','appl',makeJpegSettings);
+    EXTMAP_AND_MORE("png",'grex','appl',makePngSettings);
+    EXTMAP_AND_MORE("tga",'grex','appl',makeTgaSettings);
     
 
 		/*
@@ -734,6 +781,10 @@ int r_args_to_settings(int argc,char **argv,qte_parameter_settings *ssOut)
     if(ss.forced_duration > 0)
         ss.end_time = ss.start_time;
 
+    
+    ss.width = nr_find_arg_int(argc,argv,"size",0,ss.width);
+    ss.height = nr_find_arg_int(argc,argv,"size",1,ss.height);
+
 go_home:
 	if(!err)
 		*ssOut = ss;
@@ -786,8 +837,8 @@ int doMovieSequenceImport(ComponentInstance ci,Movie mo,qte_parameter_settings *
 		bail(1,nr_sprintf("filename \"%d\" is unnumbered, cant import sequence",ss->source_movie_name));
 
 	nr_printf(1,"# reading sequence frames, %d/%d per frame",ss->ticks_per_frame,ss->ticks_per_second);
-	Rect box;
-	GetMovieBox(mo,&box);
+//	Rect box;
+//	GetMovieBox(mo,&box);
 	long timeScale = GetMovieTimeScale(mo);  // we will use the source time scale. we have to?
 	//printf("timeScale = %d\n",timeScale);
 	//printf("src timeScale = %d, dst timeScale = %d/%d\n",timeScale,ss->ticks_per_frame,ss->ticks_per_second);
@@ -1002,11 +1053,29 @@ main(int argc,char **argv)
 		obailnil(mo,nr_sprintf("could not open movie %s",ss.source_movie_name));
 		}
 
-
+    // |
+    // | fix up width & height selection, maybe
+    // |
+    if(ss.width > 0 && mo && ss.height == 0)
+    {
+        Rect box;
+        GetMovieBox(mo,&box);
+        OffsetRect(&box,-box.left,-box.top);
+        double movieWidth = box.right;
+        double movieHeight = box.bottom;
+        if(movieWidth > 0 && movieHeight > 0)
+            ss.height = movieHeight * ss.width / movieWidth;
+    }
+    
 
 
 	ci = nr_open_component( 'spit',ss.exporter_subtype,ss.exporter_mfr);
 	nr_printf(3,"ci is 0x%08x\n",ci);
+    if(ci == 0)
+    {
+        // try not-appl also
+        ci = nr_open_component( 'spit',ss.exporter_subtype,0);
+    }
 	obailnil(ci,
 			nr_sprintf("could not open export component %s:%s (%08x:%08x)",
 					o2c(ss.exporter_subtype),
@@ -1060,7 +1129,7 @@ main(int argc,char **argv)
         // | We trust completely the dialog or stashed settings.
         // |
 
-        if((!ss.load_settings) && (!ss.do_dialog) && (!ss.dont_put_params_atop_atom))  // this is the test
+        if((ss.exporter_subtype == 'MooV') && (!ss.dont_put_params_atop_atom)) // we can disable the atop-ness 
             {
             // really, this is the exception -- being able to manipulate the
             // exporter settings atom. probably only vaguely feasible for -->.mov.

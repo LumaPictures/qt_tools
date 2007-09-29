@@ -15,45 +15,77 @@ qt_export
 
 =head1 SYNOPSIS
 
-B<qt_export> [options] [source-movie new-movie]
-
-B<--video>=I<compressor>,I<frame-rate>,I<quality>,I<bits-per-pixel>
-
-B<--audio>=I<compressor>,I<sample-rate>,I<bits-per-sample>,I<channels>
+B<qt_export> [options] [source-media-file new-media-file]
 
 B<--loadsettings>=I<export-settings>
 
 B<--savesettings>=I<export-settings>
 
+B<--dodialog>
+
+B<--duration>=I<start-time>,I<end-time> 
+
+B<--replacefile>
+
+B<--video>=I<compressor>,I<frame-rate>,I<quality>,I<bits-per-pixel>
+
+B<--audio>=I<compressor>,I<sample-rate>,I<bits-per-sample>,I<channels>
+
 B<--exporter>=I<exporter-subtype>[,I<exporter-mfr>]
 
 B<--sequencerate>=I<sequence-import-fps>
 
-B<--dodialog> B<--datarate>=I<kilobytes-per-second> B<--keyframerate>=I<frames-per-key-frame>
-B<--duration>=I<start-time>,I<end-time> B<--replacefile>
+B<--datarate>=I<kilobytes-per-second> B<--keyframerate>=I<frames-per-key-frame>
 
 =head1 DESCRIPTION
 
-B<qt_export> lets you convert (or "export") QuickTime movies to
-new QuickTime movies. This is something that QuickTime Player can do if
-you have licensed QuickTime Pro.
-Why would you want to use this command line tool instead? Two reasons. First,
-you can use shell scripting to control the parameters or file
-choices for batch processing. (I am scared of AppleScript, you see.)
-Second, because B<qt_export> is I<free>, and QuickTime Pro is not.
+B<qt_export> lets you convert (or "export") QuickTime movies (and
+other file foramts) to new QuickTime movies (and other file formats). 
+In general the file formats are inferred from the file name extensions.
 
-(Not to even mention that you can use "nice" to run a big encode job
-without affecting your foreground work. Or run multiple encodes at
-once -- exactly the way QuickTime Player doesn't -- to use both your
-CPU's for those single-CPU encoders. Or even telnet to your
-other Mac to start an encoding job going over there, too.)
+For example, B<qt_export foo.mov bar.aiff> will extract the audio from a QuickTime movie into an AIFF audio file.
 
-Command line options let you change many (but not all) of the parameters 
+Command line options let you change some of the parameters 
 QuickTime uses to export a movie. Additionally, you can
 invoke QuickTime's built-in export dialog, and save those settings
 for reuse.
 
 =head1 OPTIONS
+
+=over 4
+
+=item B<--dodialog>
+
+This switch brings up the standard QuickTime export
+dialog. The dialog is applied I<after> any loaded settings or
+command line switches. The kind of dialog will be affected
+by the kind of destination file (inferred from the file extension)
+and by the --exporter option.
+
+=item B<--loadsettings>=I<export-settings-file>
+
+If you have previously saved some export settings then you can
+reuse them with this switch. These settings are appled I<before>
+any command line switches which affect the export settings.
+
+=item B<--savesettings>=I<export-settings-file>
+
+You may save your export settings for reuse. (You may wish to
+use "qt_atom I<export-settings-file>" to see the private contents.)
+
+=item B<--exporter>=I<exporter-subtype>[,I<exporter-mfr>]
+
+You can select a particular QuickTime exporter by type. Use
+"qt_info --type=spit" to see a complete list of such exporters.
+
+=item B<--duration>=I<start-time>,I<end-time>
+
+You may choose to export only a portion of the movie. These
+times are specified in seconds. These may be decimal fractions.
+
+=back
+
+=head1 OPTIONS FOR MOVIE (.mov) EXPORT ONLY
 
 =over 4
 
@@ -65,11 +97,9 @@ Comma-separated values are all optional; any omitted value will receive
 a reasonable default.
 
 I<compressor> is a four-character ID for the image
-compression component to be used. (See Appendix A.)
-
-Additionally, several types invoke exporters for specific nonmovie file types.
-mpg invokes Roxio's MPEG-1 exporter (if present). mpg2 invokes Apple's
-MPEG-2 exporter (if present).
+compression component to be used.  Use
+"qt_info --type=imdc" to see a complete list of such compressors. 
+(See Appendix A.)
 
 I<frame-rate> is given in frames per second,
 and may be a fractional number, such as 29.97 (for broadcast video) or 0.1 (for
@@ -87,13 +117,9 @@ is not used by most compressors.
 I<compressor> is a four-character ID for the audio
 compression component to be used. (See Appendix B.)
 
-Additionally, several types invoke exporters for specific nonmovie file types.
-AIFF will invoke QuickTime's AIFF exporter. WAV will invoke QuickTime's WAV exporter.
-
-
 I<sample-rate> is the number of samples per second, and may be a fractional value.
 
-I<bits-per-sample> is ignored by most compressors; typically 8 or 16.
+I<bits-per-sample> is ignored by most audio compressors; typically 8 or 16.
 
 I<channels> is 1 for mono or 2 for stereo.
 
@@ -108,27 +134,6 @@ The video compressor will insert periodic sync frames (sometimes
 called key frames) at this rate. (Not supported by all
 compressors.)
 
-=item B<--duration>=I<start-time>,I<end-time>
-
-You may choose to export only a portion of the movie. These
-times are specified in seconds. These may be decimal fractions.
-
-=item B<--loadsettings>=I<export-settings>
-
-If you have previously saved some export settings then you can
-reuse them with this switch. These settings are appled I<before>
-any command line switches which affect the export settings.
-
-=item B<--savesettings>=I<export-settings>
-
-You may save your export settings for reuse.
-
-=item B<--exporter>=I<exporter-subtype>[,I<exporter-mfr>]
-
-You can select a particular QuickTime exporter by type. Use
-"qt_info --type=spit" to see a complete list of such exporters.
-My favorite is --exporter=mpg4.
-
 =item B<--sequencerate>=I<sequence-import-fps>
 
 If the source name contains digits and a sequence rate is specified,
@@ -136,12 +141,6 @@ then B<qt_export> will import an image sequence. It will look for
 any files which are part of the same sequence, and append them all
 into a movie. It will then export the movie with the video settings
 specified.
-
-=item B<--dodialog>
-
-This switch brings up the standard QuickTime movie export
-dialog. The dialog is applied I<after> any loaded settings or
-command line switches.
 
 =item B<--help>
 
@@ -152,25 +151,6 @@ Show abbreviated help.
 Show this man page, compiled right into the tool, to keep it tidy and self contained.
 
 =back
-
-=head1 COMPRESSING FOR DVD STUDIO PRO
-
-This version of B<qt_export> only works with DVD Studio Pro 2.0 and later.
-(Earlier versions of the MPEG2 exporter shipped with DVD Studio Pro did
-not support dialog settings.)
-
-To convert a single file, try:
-
-       qt_export --video=mpg2 --dodialog sourcemovie.mov dvdmovie.mp2
-
-To convert multiple files, first use --dodialog without a source or destination file
-to save your desired settings, then use the saved settings as many times
-as needed.
-
-       qt_export --video=mpg2 --dodialog --savesettings=foo.st
-       qt_export --video=mpg2 --loadsettings=foo.st sourcemovie_1.mov dvdmovie_1.mp2
-       qt_export --video=mpg2 --loadsettings=foo.st sourcemovie_2.mov dvdmovie_2.mp2
-       ... (more files)
 
 =head1 EXAMPLES
 
@@ -199,28 +179,35 @@ choose the exact settings in an export settings dialog.
 
 =item qt_export infile.mp3 outfile.au
 
-Audio formats can be freely interconverted. If the source is a movie, the audio will be extracted.
+Audio formats can be freely interconverted. If the source is a movie, the audio will be extracted. 
+(Saving to .mp3 is only available if you have installed LAMEEncoder.component into /System/Library/QuickTime.)
 
-=item qt_export --sequencerate=15 sourcepicture_123.jpg exportmovie.mov
+=item qt_export --sequencerate=15 sourcepicture_123.jpg --video=mjpa exportmovie.mov
 
 Look for files named sourcepicture_000.jpg, sourcepicture_001, ..., sourcepicture_999.jpg,
-and append any which are found into a new movie named exportmovie.mov. Use the
-default video compression settings.
+and append any which are found into a new movie named exportmovie.mov. Use
+"Motion JPEG A" compression.
 
+=item qt_export --dodialog --savesettings=exportsettings.st
 
-=item qt_export --dodialog --savesettings=exportsettings.dat
-
-This will invoke the QuickTime export dialog and save the settings to a file.
+This will invoke the QuickTime movie export dialog and save the settings to a file.
 No movie will be exported.
+
+=item qt_export --dodialog --exporter=BMPf --savesettings=pSettings.st
+
+=item qt_export --exporter=BMPf --loadsettings=pSettings.st foo.jpg foo.pict
+
+Create a settings file for BMPf (Windows .bmp) export, and use those settings
+to convert a JPEG file.
 
 =item qt_export --video=cvid download.mpg some_movie.mov
 
 Convert an MPEG file to a Cinepak movie, keeping the same frame rate.
 (As it turns out, QuickTime can not export the audio from an MPEG movie.)
 
-=item qt_export --loadsettings=exportsettings.dat --video=,10 test.mov test_10.mov
+=item qt_export --loadsettings=exportsettings.st --video=,10 test.mov test_10.mov
 
-Start with the settings in exportsettings.dat and override just the frame rate to 10
+Start with the settings in exportsettings.st and override just the frame rate to 10
 frames per second. Use these new settings to convert test.mov to test_10.mov.
 
 =item qt_export --duration=2,3.5 test.mov test_out.mov
@@ -238,6 +225,26 @@ Convert the frame of a_movie.mov at time 20.4 seconds into a Windows-style bitma
 file. (The second part of the duration is ignored.)
 
 =back
+
+=head1 COMPRESSING FOR DVD STUDIO PRO
+
+Current versions of DVD Studio Pro will automatically convert your source assets
+into appropriate formats. But if you wish, you can batch them with qt_export.
+
+qt_export sourcemovie.mov dvdmovie.mp2
+
+To convert multiple files, first use --dodialog without a source or destination file
+to save your desired settings, then use the saved settings as many times
+as needed.
+
+qt_export --video=mpg2 --dodialog --savesettings=foo.st
+qt_export --loadsettings=foo.st sourcemovie_1.mov dvdmovie_1.mp2
+qt_export --loadsettings=foo.st sourcemovie_2.mov dvdmovie_2.mp2
+... (more files)
+
+The MPEG2 exporter will write a .aif file next to the .mp2 file, and will halt
+with a confirmation dialog if the file already exists. This just what you DONT
+want for a batch job! So delete the .aif first.
 
 =head1 APPENDIX A: Video Compressors
 
@@ -328,6 +335,10 @@ with the --savesettings and --loadsettings options you can then set up a batch
 process. But you have to use the --dodialog once to get the export configured
 just right. Tragically, not all exporters properly export their configurability
 in an API-accessible fashion.
+
+Cannot be used in remote contexts -- such as via PHP on a web page -- because
+QuickTime apparently requires an existing display, even if not drawing to the
+screen.
 
 =head1 AUTHOR and LICENSE
 

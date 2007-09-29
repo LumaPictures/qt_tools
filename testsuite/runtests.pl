@@ -106,6 +106,13 @@ sub getQTInfo($)
 	return $result;
 }
 
+sub snagOutput($)
+{
+	my $cmdLine = shift;
+	my $out = `$cmdLine`;
+    return $out;
+}
+
 sub snagParseableOutput($)
 {
 	my $cmdLine = shift;
@@ -164,6 +171,12 @@ sub assertZero($)
     $assertCount++;
 }
 
+sub fail($)
+{
+    my $what = shift;
+    die "ERROR $what";
+}
+
 sub assertEquals($$$)
 {
 	my ($what,$want,$got) = (@_);
@@ -209,6 +222,8 @@ sub testQtInfo
     assertStarts("sound_format","twos",$$qtInfo{1}{sound_format});
     assertStarts("video_format","rle",$$qtInfo{2}{video_format});
     assertEquals("movie_track_count",2,$$qtInfo{movie_track_count});
+
+    assertEquals("media_average_sample_rate",60,$$qtInfo{2}{media_average_sample_rate});
 }
 
 sub test1
@@ -362,7 +377,10 @@ sub testExporterSelecting()
 			"aif,AIFF,soun",
 			"aiff,AIFF,soun",
 			"dv,dvc!,appl",
-			"jpg,grex,appl",
+			"jpg,grex,appl,1",
+			"png,grex,appl,1",
+			"tga,grex,appl,1",
+            "mp2,MPEG,....",
 			"mp3,mp3,PYEh",
 			"wav,WAVE,soun",
 			"mp4,mpg4,appl",
@@ -370,10 +388,10 @@ sub testExporterSelecting()
             "avi,VfW,appl"
             )
 	{
-		my ($extension,$subtype,$mfr) = split(/,/,$try);
-		my $resultFile = "testoutput/fooxport.$extension";
+		my ($extension,$subtype,$mfr,$isStillFormat) = split(/,/,$try);
+		my $resultFile = "testoutput/fooxport_$extension.$extension";
         my $duration = "--duration=0,.1";
-        if($extension eq "jpg")
+        if($isStillFormat)
         {
             $duration = "";  # a duration on jpg would cause an image sequence. we want 1 file.
         }
@@ -396,6 +414,19 @@ sub testM4aAudioOnly()
     my $assns = snagParseableOutput("$cmd");
     my $qtInfo = getQTInfo($resultFile);
 	assertEq("audio has empty movie_box pls?","(0,0,0,0)",$$qtInfo{movie_box});
+}
+
+sub testManPages()
+{
+    print "checking man pages...";
+    my $cmd = "${appsLoc}qt_export --man";
+    print "cmd = $cmd\n";
+    my $out = snagOutput($cmd);
+
+    if($out =~ /.*No man .*/mi)
+    {
+        fail("No man page!");
+    }
 }
 
 sub main(@)
@@ -437,12 +468,13 @@ sub main(@)
 	else
 	{	
 		testHaveTools();
+		testQtInfo();
+        testManPages();
         testM4aAudioOnly();
         testDirectoryWithNumbers();
 		testExporterSelecting();
         testOddSequenceRates();
 		test6();
-		testQtInfo();
 		test1();
 		test2();
 		test3();
