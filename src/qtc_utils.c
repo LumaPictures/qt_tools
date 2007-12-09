@@ -390,7 +390,7 @@ double nr_find_arg_double(int argc, char *argv[],char *argname,int index,double 
 	if(!value)
 		goto go_home;
 
-	sscanf(value,"%Le",&result);
+	sscanf(value,"%le",&result);
 go_home:
 	return result;
 	}
@@ -971,6 +971,11 @@ OSErr nr_find_deep_atom(QTAtomContainer ac,char *path,QTAtom *atom_out,int creat
 	while(strlen(path) >= 4)
 		{
 		memcpy(&at,path,4);
+        
+        // endian-neutral extraction of ostype, dvb071208
+        at = c2o(path);
+        
+        
 		path += 4;
 
 		nr_printf(3,"nr_find_deep_atom: (\'%s\')",o2c(at));
@@ -1003,7 +1008,7 @@ go_home:
 	return err;
 	}
 
-int nr_get_deep_atom_data(QTAtomContainer ac,char *path,int data_out_size,void *data_out)
+OSErr nr_get_deep_atom_data(QTAtomContainer ac,char *path,int data_out_size,void *data_out)
 	{
 	OSErr err = 0;
 	QTAtom a;
@@ -1028,6 +1033,30 @@ int nr_get_deep_atom_data(QTAtomContainer ac,char *path,int data_out_size,void *
 go_home:
 	return err;
 	}
+
+OSErr nr_get_deep_atom_short(QTAtomContainer ac,char *path,short *data_out)
+{
+    char b[2];
+    OSErr err = nr_get_deep_atom_data(ac,path,2,b);
+    *data_out = (b[0] << 8) | b[1];
+    return err;
+}
+
+OSErr nr_get_deep_atom_long(QTAtomContainer ac,char *path,long *data_out)
+{
+    char b[4];
+    OSErr err = nr_get_deep_atom_data(ac,path,4,b);
+    *data_out = (b[0] << 24)
+        | (b[1] << 16)
+        | (b[2] << 8)
+        | (b[3] << 0);
+    return err;
+}
+
+OSErr nr_get_deep_atom_ostype(QTAtomContainer ac,char *path,OSType *data_out)
+{
+    return nr_get_deep_atom_long(ac,path,data_out);
+}
 
 // |
 // | using a path composed of 4n characters,
@@ -1099,6 +1128,9 @@ OSErr nr_insert_deep_atom_data_id(QTAtomContainer ac,char *path,int data_size,vo
 	// | and pop in our new child
 	// |
 	memcpy(&at,path + strlen(path) - 4,4);
+    
+    at = c2o(path + strlen(path) - 4); // endian neutral...
+    
 	QTInsertChild(ac,a,at,id,1,data_size,data,&a_child);
 	bailerr(err,"QTInsertChild");
 
@@ -1113,13 +1145,139 @@ OSErr nr_insert_deep_atom_byte(QTAtomContainer ac,char *path,char byte_of_data)
 
 OSErr nr_insert_deep_atom_short(QTAtomContainer ac,char *path,short short_of_data)
 	{
-	return nr_insert_deep_atom_data(ac,path,2,&short_of_data);
+    unsigned char bytes[2];
+    // pack bytes big-endian
+    bytes[0] = (short_of_data >> 8) & 0xff;
+    bytes[1] = (short_of_data >> 0) & 0xff;
+	return nr_insert_deep_atom_data(ac,path,2,bytes);
 	}
 
 OSErr nr_insert_deep_atom_long(QTAtomContainer ac,char *path,long long_of_data)
-	{
-	return nr_insert_deep_atom_data(ac,path,4,&long_of_data);
-	}
+{
+    unsigned char bytes[4];
+    // pack bytes big-endian, as per qt_atom-ness.
+    bytes[0] = (long_of_data >> 24) & 0xff;
+    bytes[1] = (long_of_data >> 16) & 0xff;
+    bytes[2] = (long_of_data >> 8) & 0xff;
+    bytes[3] = (long_of_data >> 0) & 0xff;
+	return nr_insert_deep_atom_data(ac,path,4,bytes);
+}
+
+OSErr nr_insert_deep_atom_ostype(QTAtomContainer ac,char *path,OSType ossy)
+{
+    return nr_insert_deep_atom_long(ac,path,(long)ossy);
+//	return nr_insert_deep_atom_data(ac,path,4,&ossy);
+}
+
+// ever seen a routine like this b'fur?
+static void swap16(short *a)
+{
+    char *b = (char *)a;
+    char x;
+    x = b[0];
+    b[0] = b[1];
+    b[1] = x;
+}
+
+static void swap32(long *a)
+{
+    char *b = (char *)a;
+    char x;
+    x = b[0];
+    b[0] = b[3];
+    b[3] = x;
+    x = b[1];
+    b[1] = b[2];
+    b[2] = x;
+}
+
+// evaluates "true" if the presently executing platform is little-endian.
+#define WE_LE ((*(short *)"12") == 0x3231)
+
+
+// note - you can't tell by looking whether its been
+// swapped recently. you gotta keep count.
+static void swapSCSpatialSettings(SCSpatialSettings *sps)
+{
+    swap32(&sps->codecType);
+    swap16(&sps->depth);
+    swap32(&sps->spatialQuality);
+}
+
+static void swapSCTemporalSettings(SCTemporalSettings *sts)
+{
+    swap32(&sts->temporalQuality);
+    swap32(&sts->frameRate);
+    swap32(&sts->keyFrameRate);
+}
+
+static void swapSCDataRateSettings(SCDataRateSettings *sds)
+{
+    swap32(&sds->dataRate);
+    swap32(&sds->frameDuration);
+    swap32(&sds->minSpatialQuality);
+    swap32(&sds->minTemporalQuality);
+}
+
+OSErr nr_get_deep_atom_SCSpatialSettings(QTAtomContainer ac,char *path,SCSpatialSettings *sps)
+{
+    OSErr err = nr_get_deep_atom_data(ac,path,sizeof(SCSpatialSettings),sps);
+    if(WE_LE)
+        swapSCSpatialSettings(sps);
+    return err;
+}
+
+// poke an in-memory SCSpatialSettings to an atom, swap in place if needed.
+OSErr nr_insert_deep_atom_SCSpatialSettings(QTAtomContainer ac,char *path,SCSpatialSettings *sps)
+{
+    if(WE_LE)
+        swapSCSpatialSettings(sps);
+    OSErr err = nr_insert_deep_atom_data(ac,path,sizeof(SCSpatialSettings),sps);
+    if(WE_LE)
+        swapSCSpatialSettings(sps);
+    return err;
+}
+
+OSErr nr_get_deep_atom_SCTemporalSettings(QTAtomContainer ac,char *path,SCTemporalSettings *sts)
+{
+    OSErr err = nr_get_deep_atom_data(ac,path,sizeof(SCTemporalSettings),sts);
+    if(WE_LE)
+        swapSCTemporalSettings(sts);
+    return err;
+}
+
+// poke an in-memory SCSpatialSettings to an atom, swap in place if needed.
+OSErr nr_insert_deep_atom_SCTemporalSettings(QTAtomContainer ac,char *path,SCTemporalSettings *sts)
+{
+    if(WE_LE)
+        swapSCTemporalSettings(sts);
+    OSErr err = nr_insert_deep_atom_data(ac,path,sizeof(SCTemporalSettings),sts);
+    if(WE_LE)
+        swapSCTemporalSettings(sts);
+    return err;
+}
+
+
+OSErr nr_get_deep_atom_SCDataRateSettings(QTAtomContainer ac,char *path,SCDataRateSettings *sds)
+{
+    OSErr err = nr_get_deep_atom_data(ac,path,sizeof(SCDataRateSettings),sds);
+    if(WE_LE)
+        swapSCSpatialSettings(sds);
+    return err;
+}
+
+// poke an in-memory SCDataRateSettings to an atom, swap in place if needed.
+OSErr nr_insert_deep_atom_SCDataRateSettings(QTAtomContainer ac,char *path,SCDataRateSettings *sds)
+{
+    if(WE_LE)
+        swapSCDataRateSettings(sds);
+    OSErr err = nr_insert_deep_atom_data(ac,path,sizeof(SCDataRateSettings),sds);
+    if(WE_LE)
+        swapSCDataRateSettings(sds);
+    return err;
+}
+
+
 
 OSErr nr_file_exists(char *filename)
 	{

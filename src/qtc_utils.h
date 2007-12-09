@@ -121,13 +121,28 @@ OSErr nr_file_to_atom_container(char *filename,QTAtomContainer *ac_out);
 OSErr nr_atom_container_to_file(QTAtomContainer ac,char *filename);
 
 OSErr nr_find_deep_atom(QTAtomContainer ac,char *path,QTAtom *atom_out,int create_as_we_go);
-int nr_get_deep_atom_data(QTAtomContainer ac,char *path,int data_out_size,void *data_out);
+OSErr nr_get_deep_atom_data(QTAtomContainer ac,char *path,int data_out_size,void *data_out);
+OSErr nr_get_deep_atom_short(QTAtomContainer ac,char *path,short *data_out);
+OSErr nr_get_deep_atom_long(QTAtomContainer ac,char *path,long *data_out);
+OSErr nr_get_deep_atom_ostype(QTAtomContainer ac,char *path,OSType *data_out);
+
 
 OSErr nr_delete_deep_atom(QTAtomContainer ac,char *path);
 OSErr nr_insert_deep_atom_data(QTAtomContainer ac,char *path,int data_size,void *data);
 OSErr nr_insert_deep_atom_byte(QTAtomContainer ac,char *path,char byte_of_data);
 OSErr nr_insert_deep_atom_short(QTAtomContainer ac,char *path,short short_of_data);
 OSErr nr_insert_deep_atom_long(QTAtomContainer ac,char *path,long long_of_data);
+OSErr nr_insert_deep_atom_ostype(QTAtomContainer ac,char *path,OSType long_of_data);
+
+// full struct fetch/gett
+OSErr nr_get_deep_atom_SCSpatialSettings(QTAtomContainer ac,char *path,SCSpatialSettings *sps);
+OSErr nr_insert_deep_atom_SCSpatialSettings(QTAtomContainer ac,char *path,SCSpatialSettings *sps);
+
+OSErr nr_get_deep_atom_SCTemporalSettings(QTAtomContainer ac,char *path,SCTemporalSettings *sts);
+OSErr nr_insert_deep_atom_SCTemporalSettings(QTAtomContainer ac,char *path,SCTemporalSettings *sts);
+
+OSErr nr_get_deep_atom_SCDataRateSettings(QTAtomContainer ac,char *path,SCDataRateSettings *sds);
+OSErr nr_insert_deep_atom_SCDataRateSettings(QTAtomContainer ac,char *path,SCDataRateSettings *sds);
 
 OSErr nr_insert_deep_atom_data_id
 		(QTAtomContainer ac,char *path,int data_size,void *data,QTAtomID id);

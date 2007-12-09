@@ -109,6 +109,7 @@ sub getQTInfo($)
 sub snagOutput($)
 {
 	my $cmdLine = shift;
+    print "snagOutput backticking: $cmdLine\n";
 	my $out = `$cmdLine`;
     return $out;
 }
@@ -116,6 +117,7 @@ sub snagOutput($)
 sub snagParseableOutput($)
 {
 	my $cmdLine = shift;
+    print "snagParseableOutput backticking: $cmdLine\n";
 	my $parseableInfo = `$cmdLine`;
 	my @infoLines = split(/[\n\r]+/, $parseableInfo);
     my $assnCount = 0;
@@ -160,7 +162,7 @@ sub assertFileExists($)
 sub assertTrue($$)
 {
     my ($msg,$bool) = (@_);
-    die $msg if !$bool;
+    die "($assertCount) $msg" if !$bool;
     $assertCount++;
 }
 
@@ -216,7 +218,7 @@ sub testHaveTools()
 
 sub testQtInfo
 {
-    print "testQTInfo\n";
+    print "testQtInfo\n";
     my $qtInfo = getQTInfo($sweepMov);
     assertEquals("movie_duration",2,$$qtInfo{movie_duration});
     assertStarts("sound_format","twos",$$qtInfo{1}{sound_format});
@@ -288,8 +290,8 @@ sub test5
     assertFileExists($dm2);
     my $s1 = getFileSize($dm1);
     my $s2 = getFileSize($dm2);
-    assertTrue("data rate looks wrong",$s1 < 2000000);
-    assertTrue("data rate looks wrong",$s2 > 3000000);
+    assertTrue("data rate $s1 looks wrong",$s1 < 2000000);
+    assertTrue("data rate $s1 looks wrong",$s2 > 3000000);
 
     # while we're here, let us verify that audio doesnt exist...
     my $qtInfo = getQTInfo($dm1);
@@ -367,7 +369,7 @@ sub testDirectoryWithNumbers()
     my $qtInfo = getQTInfo("testoutput/sweepframes.mov");
     # make sure we got all the frame -- even though there was a number in the directory
     my $duration = $$qtInfo{movie_duration};
-    assertEquals("sequence with tricky numbers in file name",1.5,$duration);
+    assertEquals("sequence with tricky numbers in file name (duration)",1.5,$duration);
 }
 
 sub testExporterSelecting()
@@ -380,8 +382,8 @@ sub testExporterSelecting()
 			"jpg,grex,appl,1",
 			"png,grex,appl,1",
 			"tga,grex,appl,1",
-            "mp2,MPEG,....",
-			"mp3,mp3,PYEh",
+            # needs dvdsp installed"mp2,MPEG,....",
+# mp3 is often not around, either... boo hoo. "mp3,mp3,PYEh",
 			"wav,WAVE,soun",
 			"mp4,mpg4,appl",
 			"m4a,mpg4,appl",   # an audio-only mpeg-4 file

@@ -127,8 +127,8 @@ typedef struct
 	// --audio=compressor,samplerate,samplesize,channels
 	OSType audio_compressor;
 	double sample_rate;
-	int sample_size; // 8 or 16, generally hey
-	int channel_count; // 1 or 2
+	short sample_size; // 8 or 16, generally hey
+	short channel_count; // 1 or 2
 
 	double data_rate; // k per second
 	int key_frame_rate; // frames per key frame
@@ -232,7 +232,7 @@ int r_atom_container_to_parameter_settings(QTAtomContainer ac,qte_parameter_sett
 	// | Video settings
 	// |
 
-	err = nr_get_deep_atom_data(ac,"videsptl",sizeof(sps),&sps);
+	err = nr_get_deep_atom_SCSpatialSettings(ac,"videsptl",&sps);
 	if(err == 0) // present?
 		{
 		ss->video_compressor = sps.codecType;
@@ -240,14 +240,14 @@ int r_atom_container_to_parameter_settings(QTAtomContainer ac,qte_parameter_sett
 		ss->quality = sps.spatialQuality * 100.0 / 1024.0;
 		}
 
-	err = nr_get_deep_atom_data(ac,"videtprl",sizeof(sts),&sts);
+	err = nr_get_deep_atom_SCTemporalSettings(ac,"videtprl",&sts);
 	if(err == 0) // present?
 		{
 		ss->frame_rate = f2d(sts.frameRate);
 		ss->key_frame_rate = sts.keyFrameRate;
 		}
 
-	err = nr_get_deep_atom_data(ac,"videdrat",sizeof(sdr),&sdr);
+	err = nr_get_deep_atom_SCDataRateSettings(ac,"videdrat",&sdr);
 	if(err == 0)
 		{
 		ss->data_rate = sdr.dataRate / 1024.0;
@@ -261,14 +261,14 @@ int r_atom_container_to_parameter_settings(QTAtomContainer ac,qte_parameter_sett
 	// | Audio Settings
 	// |
 
-	err = nr_get_deep_atom_data(ac,"sounssct",sizeof(OSType),&ss->audio_compressor);
+	err = nr_get_deep_atom_ostype(ac,"sounssct",&ss->audio_compressor);
 
-	err = nr_get_deep_atom_data(ac,"sounssrt",sizeof(uf_sample_rate),&uf_sample_rate);
+	err = nr_get_deep_atom_long(ac,"sounssrt",&uf_sample_rate);
 	if(err == 0)
 		ss->sample_rate = f2d(uf_sample_rate);
 
-	err = nr_get_deep_atom_data(ac,"sounssss",sizeof(ss->sample_size),&ss->sample_size);
-	err = nr_get_deep_atom_data(ac,"sounsscc",sizeof(ss->channel_count),&ss->channel_count);
+	err = nr_get_deep_atom_short(ac,"sounssss",&ss->sample_size);
+	err = nr_get_deep_atom_short(ac,"sounsscc",&ss->channel_count);
 
 	err = nr_get_deep_atom_data(ac,"enso",1,&enso);
 	if(err || enso == 0)
@@ -324,11 +324,11 @@ int r_parameter_settings_atop_atom_container(qte_parameter_settings *ss,QTAtomCo
 
 		err = nr_insert_deep_atom_byte(ac,"envi",1); // enable video
 		bailerr(err,"could not create settings atoms");
-		err = nr_insert_deep_atom_data(ac,"videsptl",sizeof(sps),&sps);
+		err = nr_insert_deep_atom_SCSpatialSettings(ac,"videsptl",&sps);
 		bailerr(err,"could not create settings atoms");
-		err = nr_insert_deep_atom_data(ac,"videtprl",sizeof(sts),&sts);
+		err = nr_insert_deep_atom_SCTemporalSettings(ac,"videtprl",&sts);
 		bailerr(err,"could not create settings atoms");
-		err = nr_insert_deep_atom_data(ac,"videdrat",sizeof(sdr),&sdr);
+		err = nr_insert_deep_atom_SCDataRateSettings(ac,"videdrat",&sdr);
 		bailerr(err,"could not create settings atoms");
 
         // I saw this in quite a few movie setings files:
@@ -360,7 +360,7 @@ int r_parameter_settings_atop_atom_container(qte_parameter_settings *ss,QTAtomCo
 		{
 		err = nr_insert_deep_atom_byte(ac,"enso",1); // enable audio (sound)
 		bailerr(err,"could not create settings atoms");
-		err = nr_insert_deep_atom_long(ac,"sounssct",ss->audio_compressor);
+		err = nr_insert_deep_atom_ostype(ac,"sounssct",ss->audio_compressor);
 		bailerr(err,"could not create settings atoms");
 		err = nr_insert_deep_atom_long(ac,"sounssrt",d2f(ss->sample_rate));
 		bailerr(err,"could not create settings atoms");
@@ -467,7 +467,8 @@ static int makeGrexAtomAndPokeSettings(OSType kind,qte_parameter_settings *ss)
     int err = QTNewAtomContainer(&js);
     obailerr(err,"Could not create atom container");
     nr_insert_deep_atom_data(js,"timefps ",4,"\0\0\0\0");
-    nr_insert_deep_atom_long(js,"ftyp",kind);
+    nr_insert_deep_atom_data(js,"timefps ",4,"\xff\xff\xff\xff");
+    nr_insert_deep_atom_ostype(js,"ftyp",kind);
     nr_insert_deep_atom_data(js,"\" \"?",1,"\0");
     ss->settings = js;
     ss->forced_duration = 1;
@@ -648,6 +649,7 @@ int r_args_to_settings(int argc,char **argv,qte_parameter_settings *ssOut)
 	// | !!! TODO (as they say): fill in an exporter type based on the
 	// | filename extension of the export file. That way, qt_export blah.mp3 foo.aiff
 	// | would just do what you meant. For example.
+    // | (note, this was done in 2007. )
 	// |
 
 	ss.video_compressor = 'SVQ3';   // sorenson...

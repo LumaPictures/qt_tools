@@ -18,6 +18,28 @@
 			name = "make release";
 			productName = a_target;
 		};
+		EE3377C80D0C3FB500853941 /* make release i386 */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = EE3377CA0D0C3FB500853941 /* Build configuration list for PBXAggregateTarget "make release i386" */;
+			buildPhases = (
+				EE3377C90D0C3FB500853941 /* make release ARCH=i386 */,
+			);
+			dependencies = (
+			);
+			name = "make release i386";
+			productName = a_target;
+		};
+		EE33782F0D0C486F00853941 /* make i386 */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = EE3378310D0C486F00853941 /* Build configuration list for PBXAggregateTarget "make i386" */;
+			buildPhases = (
+				EE3378300D0C486F00853941 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = "make i386";
+			productName = a_target;
+		};
 		EECAF8120ABBD25E00DB981D /* make */ = {
 			isa = PBXAggregateTarget;
 			buildConfigurationList = EECAF8130ABBD27D00DB981D /* Build configuration list for PBXAggregateTarget "make" */;
@@ -175,8 +197,10 @@
 			projectDirPath = "";
 			targets = (
 				EECAF8120ABBD25E00DB981D /* make */,
+				EE33782F0D0C486F00853941 /* make i386 */,
 				EECAF8500ABBD3B700DB981D /* make clean */,
 				EE29B2C50ABCC25100125B0A /* make release */,
+				EE3377C80D0C3FB500853941 /* make release i386 */,
 			);
 		};
 /* End PBXProject section */
@@ -195,6 +219,33 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "make release\nexit 0";
+		};
+		EE3377C90D0C3FB500853941 /* make release ARCH=i386 */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "make release ARCH=i386";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make release ARCH=i386\nexit 0";
+		};
+		EE3378300D0C486F00853941 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# shell script goes here\nmake ARCH=i386\nexit 0";
 		};
 		EECAF8110ABBD25E00DB981D /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -237,6 +288,50 @@
 			name = Debug;
 		};
 		EE29B2C90ABCC25100125B0A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				PRODUCT_NAME = a_target;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		EE3377CB0D0C3FB500853941 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = a_target;
+			};
+			name = Debug;
+		};
+		EE3377CC0D0C3FB500853941 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				PRODUCT_NAME = a_target;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		EE3378320D0C486F00853941 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = a_target;
+			};
+			name = Debug;
+		};
+		EE3378330D0C486F00853941 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
@@ -313,6 +408,24 @@
 			buildConfigurations = (
 				EE29B2C80ABCC25100125B0A /* Debug */,
 				EE29B2C90ABCC25100125B0A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EE3377CA0D0C3FB500853941 /* Build configuration list for PBXAggregateTarget "make release i386" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE3377CB0D0C3FB500853941 /* Debug */,
+				EE3377CC0D0C3FB500853941 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EE3378310D0C486F00853941 /* Build configuration list for PBXAggregateTarget "make i386" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE3378320D0C486F00853941 /* Debug */,
+				EE3378330D0C486F00853941 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

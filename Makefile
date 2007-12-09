@@ -28,6 +28,18 @@ LIBS = \
 	-framework CoreServices \
 	-framework Cocoa
 
+# |
+# | qt_tools was developed and tested on ppc, big-endian, macintoshes.
+# | It *does* build for i386, but some of the tests fail, various
+# | things don't work quite right.
+# | Change the architecture only at your own risk!
+# | dvb 2007.12.08
+# |
+ARCH = ppc
+
+GCCOPTS = -arch $(ARCH) -gfull
+
+
 # where things come from...
 SRC = ./src
 TOOLS = ./tools
@@ -237,12 +249,12 @@ $(OBJ)/settings.c : $(SETTINGSES) $(MAKEFILE) $(TOOLS)/settingsToC.pl
 $(OBJ)/%.o : $(SRC)/%.c $(INCLUDES)
 	$(FOLDERS)
 	$(E) Compiling $<
-	@gcc -I. -I$(SRC) -I$(OBJ) -DHOSTNAME=\"`hostname`\" -c $< -o $@
+	@gcc $(GCCOPTS) -I. -I$(SRC) -I$(OBJ) -DHOSTNAME=\"`hostname`\" -c $< -o $@
 
 $(APP)/% : $(OBJ)/%.o $(UTILS_OBJECTS)
 	$(FOLDERS)
 	$(E) Linking $@
-	@gcc $< $(UTILS_OBJECTS) $(LIBS) -g -o $@
+	@gcc $(GCCOPTS) $< $(UTILS_OBJECTS) $(LIBS) -g -o $@
 	$(E) Rezzing $@
 	@echo "data 'carb' (0) { };" | $(REZ) -a -o $@
 

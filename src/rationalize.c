@@ -43,7 +43,7 @@ void rationalize(double n,
     // you can't use more than *maybe* a dozen before the denominator
     // is crazy-big.
 
-    #define N 40
+    #define N 30
     long a[N];
 
     // we only work on positive inputs
@@ -52,15 +52,19 @@ void rationalize(double n,
     
     int i = 0; // go until N or no fraction left
 
-    //printf("[%f] ",n);
+    //printf("[%f] \n",n);
     while(n != 0 && i < N)
     {
         double w = floor(n);
-        //printf("<%f,%f> ",n,w);
+        //printf("%d. <%f,%f> \n",i,n,w);
         a[i++] = w;
         n -= w;
+        if ( n < (0.5 / (double)denominatorMax) )
+            n = 0;
+        //printf("n is %f, n==0 = %d\n",n,n==0);
         if(n != 0)
             n = 1/n;
+        //printf("n is %f\n",n);
     }
 
     // the coefficients of the iterative fraction are in place,
@@ -130,7 +134,7 @@ int main(int argc,char **argv)
     if(argc == 2)
     {
         double n;
-        sscanf(argv[1],"%Lf",&n);
+        sscanf(argv[1],"%lf",&n);
         tryRationalize(n);
         return 0;
     }
@@ -139,8 +143,8 @@ int main(int argc,char **argv)
     {
         double num;
         double den;
-        sscanf(argv[1],"%Lf",&num);
-        sscanf(argv[2],"%Lf",&den);
+        sscanf(argv[1],"%lf",&num);
+        sscanf(argv[2],"%lf",&den);
         tryRationalize(num/den);
         return 0;
     }
@@ -153,10 +157,10 @@ int main(int argc,char **argv)
         double maxDen;
         unsigned long long rNum;
         unsigned long long rDen;
-        sscanf(argv[1],"%Lf",&num);
-        sscanf(argv[2],"%Lf",&den);
-        sscanf(argv[3],"%Lf",&maxNum);
-        sscanf(argv[4],"%Lf",&maxDen);
+        sscanf(argv[1],"%lf",&num);
+        sscanf(argv[2],"%lf",&den);
+        sscanf(argv[3],"%lf",&maxNum);
+        sscanf(argv[4],"%lf",&maxDen);
         rationalize(num/den,maxNum,maxDen,&rNum,&rDen);
 
         printf("%f --> %lld/%lld (%f)\n",num/den,rNum,rDen,(double)rNum/(double)rDen);
