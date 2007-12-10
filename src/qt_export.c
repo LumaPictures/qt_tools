@@ -263,7 +263,7 @@ int r_atom_container_to_parameter_settings(QTAtomContainer ac,qte_parameter_sett
 
 	err = nr_get_deep_atom_ostype(ac,"sounssct",&ss->audio_compressor);
 
-	err = nr_get_deep_atom_long(ac,"sounssrt",&uf_sample_rate);
+	err = nr_get_deep_atom_ulong(ac,"sounssrt",&uf_sample_rate);
 	if(err == 0)
 		ss->sample_rate = f2d(uf_sample_rate);
 

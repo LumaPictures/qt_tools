@@ -1053,9 +1053,13 @@ OSErr nr_get_deep_atom_long(QTAtomContainer ac,char *path,long *data_out)
     return err;
 }
 
+OSErr nr_get_deep_atom_ulong(QTAtomContainer ac,char *path,unsigned long *data_out)
+{
+    return nr_get_deep_atom_long(ac,path,(long *)data_out);
+}
 OSErr nr_get_deep_atom_ostype(QTAtomContainer ac,char *path,OSType *data_out)
 {
-    return nr_get_deep_atom_long(ac,path,data_out);
+    return nr_get_deep_atom_ulong(ac,path,data_out);
 }
 
 // |
@@ -1191,6 +1195,12 @@ static void swap32(long *a)
     b[2] = x;
 }
 
+static void swapu32(unsigned long *a)
+{
+    long *b = (long *)a;
+    swap32(b);
+}
+
 // evaluates "true" if the presently executing platform is little-endian.
 #define WE_LE ((*(short *)"12") == 0x3231)
 
@@ -1199,14 +1209,14 @@ static void swap32(long *a)
 // swapped recently. you gotta keep count.
 static void swapSCSpatialSettings(SCSpatialSettings *sps)
 {
-    swap32(&sps->codecType);
+    swapu32(&sps->codecType);
     swap16(&sps->depth);
-    swap32(&sps->spatialQuality);
+    swapu32(&sps->spatialQuality);
 }
 
 static void swapSCTemporalSettings(SCTemporalSettings *sts)
 {
-    swap32(&sts->temporalQuality);
+    swapu32(&sts->temporalQuality);
     swap32(&sts->frameRate);
     swap32(&sts->keyFrameRate);
 }
@@ -1215,8 +1225,8 @@ static void swapSCDataRateSettings(SCDataRateSettings *sds)
 {
     swap32(&sds->dataRate);
     swap32(&sds->frameDuration);
-    swap32(&sds->minSpatialQuality);
-    swap32(&sds->minTemporalQuality);
+    swapu32(&sds->minSpatialQuality);
+    swapu32(&sds->minTemporalQuality);
 }
 
 OSErr nr_get_deep_atom_SCSpatialSettings(QTAtomContainer ac,char *path,SCSpatialSettings *sps)
@@ -1262,7 +1272,7 @@ OSErr nr_get_deep_atom_SCDataRateSettings(QTAtomContainer ac,char *path,SCDataRa
 {
     OSErr err = nr_get_deep_atom_data(ac,path,sizeof(SCDataRateSettings),sds);
     if(WE_LE)
-        swapSCSpatialSettings(sds);
+        swapSCDataRateSettings(sds);
     return err;
 }
 

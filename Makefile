@@ -29,15 +29,14 @@ LIBS = \
 	-framework Cocoa
 
 # |
-# | qt_tools was developed and tested on ppc, big-endian, macintoshes.
-# | It *does* build for i386, but some of the tests fail, various
-# | things don't work quite right.
-# | Change the architecture only at your own risk!
+# | By default, we build a universal binary. But for testing,
+# | I like to sometimes force a ppc-only build, so we
+# | can redefine ARCHS to be "-arch ppc" to do that.
 # | dvb 2007.12.08
 # |
-ARCH = ppc
+ARCHS = -arch ppc -arch i386
 
-GCCOPTS = -arch $(ARCH) -gfull
+GCCOPTS = $(ARCHS) # -gfull  (for debugging)
 
 
 # where things come from...
@@ -140,7 +139,8 @@ release : all source_to_release runtests
 	cp -r ./website/* $$site ;\
 	$(TOOLS)/munge_and_move.pl ./website/index.html $$site/index.html v=$$v b=$$b d=$$d ;\
 	cp -r $(HTML)/man $$site ;\
-	find $$site -name RCS | xargs rm -r
+	find $$site -name RCS | xargs rm -rf ;\
+	find $$site -name '*svn*' | xargs rm -rf
 
 
 check_site_gen :
@@ -282,7 +282,7 @@ source_to_release : $(SUITE)
 	@cp -f Makefile $(SOURCEDIST)
 	@chmod +w $(SOURCEDIST)/*
 	@mkdir -p $(SOURCEDIST)/testsuite
-	@cp -f testsuite/runtests.pl testsuite/sweep.mov $(SOURCEDIST)/testsuite
+	@cp -f testsuite/runtests.pl testsuite/clock1.jpg testsuite/sweep.mov $(SOURCEDIST)/testsuite
 
 runtests : $(SUITE)
 	$(E) Running Tests...
