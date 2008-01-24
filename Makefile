@@ -234,7 +234,8 @@ SETTINGSES = \
 	$(SRC)/settings/mpg4.st \
 	$(SRC)/settings/avi.st \
 	$(SRC)/settings/tga.st \
-	$(SRC)/settings/m4a.st
+	$(SRC)/settings/m4a.st \
+	$(SRC)/settings/m4v.st
 
 $(OBJ)/settings.c : $(SETTINGSES) $(MAKEFILE) $(TOOLS)/settingsToC.pl
 	$(E) Generating $<

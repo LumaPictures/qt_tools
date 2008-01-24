@@ -448,6 +448,14 @@ static int makeM4aSettings(qte_parameter_settings *ss)
     ss->dont_put_params_atop_atom = 1;
 }
 
+static int makeM4vSettings(qte_parameter_settings *ss)
+{
+    QTAtomContainer ac = (QTAtomContainer)NewHandleClear(sizeof(m4v));
+    memcpy(*(void **)ac,m4v,sizeof(m4v));
+    ss->settings = ac;
+    ss->dont_put_params_atop_atom = 1;
+}
+
 static int makeAviSettings(qte_parameter_settings *ss)
 {
     QTAtomContainer ac = (QTAtomContainer)NewHandleClear(sizeof(avi));
@@ -529,6 +537,7 @@ static void r_guess_exporter_subtype(qte_parameter_settings *ss)
 	EXTMAP("mp2",'MPEG',0);
 	EXTMAP_AND_MORE("mp4",'mpg4','appl',makeMpg4Settings);
 	EXTMAP_AND_MORE("m4a",'mpg4','appl',makeM4aSettings); // just like mp4, but with audio only.
+	EXTMAP_AND_MORE("m4v",'M4V ','appl',makeM4vSettings); // for ipod
 	EXTMAP("au",'ULAW','soun');
 	EXTMAP_AND_MORE("avi",'VfW ','appl',makeAviSettings);
 	EXTMAP("bmp",'BMPf','....');

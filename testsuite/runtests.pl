@@ -387,6 +387,7 @@ sub testExporterSelecting()
 			"wav,WAVE,soun",
 			"mp4,mpg4,appl",
 			"m4a,mpg4,appl",   # an audio-only mpeg-4 file
+			"m4v,M4V,appl",   # ipod file...
             "avi,VfW,appl"
             )
 	{
