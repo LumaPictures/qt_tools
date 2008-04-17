@@ -205,11 +205,30 @@ int stringsEqual(char *s1,char *s2)
 {
 	if(!s1 || !s2)
 		return 0;
-
+    
 	while(*s1 || *s2)
 		if(*s1++ != *s2++)
 			return 0;
-
+    
+	return 1;
+}
+int stringsEqualIgnoreCase(char *s1,char *s2)
+{
+	if(!s1 || !s2)
+		return 0;
+    
+	while(*s1 || *s2)
+    {
+        char k1 = *s1++;
+        char k2 = *s2++;
+        if(k1 >= 'A' && k1 <= 'Z')
+            k1 += 'a' - 'A';
+        if(k2 >= 'A' && k2 <= 'Z')
+            k2 += 'a' - 'A';
+		if(k1 != k2)
+			return 0;
+    }
+    
 	return 1;
 }
 

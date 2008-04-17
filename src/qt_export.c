@@ -507,11 +507,21 @@ static int makeTgaSettings(qte_parameter_settings *ss)
 
 
 #define EXTMAP(_ext,_subtype,_mfr) \
-if(stringsEqual(ext,_ext)) \
+if(stringsEqualIgnoreCase(ext,_ext)) \
 { \
     ss->exporter_subtype = _subtype; \
-		ss->exporter_mfr = _mfr; \
+	ss->exporter_mfr = _mfr; \
     nr_printf(2,"# file ext is %s, guessing exporter %s:%s\n",_ext,o2c(ss->exporter_subtype),o2c(ss->exporter_mfr)); \
+    goto doneGuessing; \
+}
+
+#define EXTMAP2(_srcExt,_ext,_subtype,_mfr) \
+if(stringsEqualIgnoreCase(ext,_ext) && stringsEqualIgnoreCase(srcExt,_srcExt)) \
+{ \
+    ss->exporter_subtype = _subtype; \
+    ss->exporter_mfr = _mfr; \
+    nr_printf(2,"# file ext is %s, guessing exporter %s:%s\n",_ext,o2c(ss->exporter_subtype),o2c(ss->exporter_mfr)); \
+    goto doneGuessing; \
 }
 
 #define EXTMAP_AND_MORE(_ext,_subtype,_mfr,_doMore) \
@@ -521,6 +531,7 @@ if(stringsEqual(ext,_ext)) \
 		ss->exporter_mfr = _mfr; \
         _doMore(ss); \
     nr_printf(2,"# file ext is %s, guessing exporter %s:%s\n",_ext,o2c(ss->exporter_subtype),o2c(ss->exporter_mfr)); \
+    goto doneGuessing; \
 }
 
 static void r_guess_exporter_subtype(qte_parameter_settings *ss)
@@ -528,8 +539,11 @@ static void r_guess_exporter_subtype(qte_parameter_settings *ss)
 	ss->exporter_subtype = 'MooV';
 	ss->exporter_mfr = 'appl';
 
+    char *srcExt = fileExt(ss->source_movie_name);
 	char *ext = fileExt(ss->export_movie_name);
 
+	EXTMAP2("mid","aif",'AIFF','musi');
+	EXTMAP2("mid","aiff",'AIFF','musi');
 	EXTMAP("aif",'AIFF','soun');
 	EXTMAP("aiff",'AIFF','soun');
 	EXTMAP("dv",'dvc!','appl');
@@ -553,7 +567,8 @@ static void r_guess_exporter_subtype(qte_parameter_settings *ss)
 		 * pyehouse.com
 		 */
 	EXTMAP("mp3",'mp3 ','PYEh');
-
+    
+doneGuessing:
 //	if(stringsEqual(ext,"aif") || stringsEqual(ext,"aiff"))
 //	{
 //		ss->exporter_subtype = 'AIFF';
@@ -569,6 +584,7 @@ static void r_guess_exporter_subtype(qte_parameter_settings *ss)
 //		ss->exporter_subtype = 'dvc!';
 //		ss->exporter_mfr = 'appl';
 //	}
+        return;
 }
 
 

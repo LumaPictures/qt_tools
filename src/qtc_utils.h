@@ -66,6 +66,7 @@ char *csubstr(char *x,int first,int len);
 int lastIndexOf(char *x,char y);
 char *fileExt(char *filename);
 int stringsEqual(char *s1,char *s2);
+int stringsEqualIgnoreCase(char *s1,char *s2);
 
 
 int nr_find_arg(int argc,char *argv[],char *argname,int *value_int_out,char **value_string_out);
