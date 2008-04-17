@@ -34,7 +34,7 @@
 
 // outermost bail macros
 
-#define obailerr(_x,_msg) if((_x) < 0) bail(1,nr_sprintf("%s %d" , (_msg) , (_x) ))
+#define obailerr(_x,_msg) if((_x) < 0) bail(1,nr_sprintf("%d: %s %d" , __LINE__,(_msg) , (_x) ))
 #define obailnil(_x,_msg) if((_x) == 0) bail(1,_msg)
 
 // | Convenient for --help usage
