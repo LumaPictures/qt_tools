@@ -119,6 +119,7 @@ typedef struct
 
 	TimeValue duration;
 	TimeValue time_scale;
+    TimeValue poster_time;
 	Fixed rate;
 	Fixed preferred_rate;
 
@@ -142,6 +143,7 @@ int r_gather_movie_info(Movie mo, s_movie_info *info_out)
 	info_out->time_scale = GetMovieTimeScale(mo);
 	info_out->rate = GetMovieRate(mo);
 	info_out->preferred_rate = GetMoviePreferredRate(mo);
+    info_out->poster_time = GetMoviePosterTime(mo);
 
 	info_out->volume = GetMovieVolume(mo);
 	info_out->preferred_volume = GetMoviePreferredVolume(mo);
@@ -158,6 +160,7 @@ int r_gather_movie_info(Movie mo, s_movie_info *info_out)
 int r_print_movie_info(s_movie_info *info)
 	{
 	nr_print_time("movie duration",info->duration,info->time_scale);
+	nr_print_time("movie poster time",info->poster_time,info->time_scale);
 	nr_print_rate("movie rate",info->rate);
 	nr_print_rate("movie preferred rate",info->preferred_rate);
 	nr_print_volume("movie volume",info->volume);
