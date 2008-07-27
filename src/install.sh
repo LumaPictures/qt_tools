@@ -70,7 +70,7 @@ fi
 echo "."
 echo "."
 
-ditto -rsrcFork ./pieces/bin/* $qbindir
+cp -rf ./pieces/bin/* $qbindir
 quit_on_error "Could not copy application files"
 echo ". Installed tools."
 

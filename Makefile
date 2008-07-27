@@ -51,7 +51,8 @@ BUILD = ./build
 OBJ = ./obj
 MAN = $(BUILD)/man
 HTML = $(BUILD)/html
-APP = $(BUILD)/app
+APP = $(BUILD)/app/qt_tools.app/Contents/MacOS
+APPTOP = $(BUILD)/app
 REL = qt_tools
 SITE = ./qt_tools_site
 
@@ -116,7 +117,7 @@ release : all source_to_release runtests
 	rm -rf $$rel ;\
 	mkdir $$rel ;\
 	mkdir -p $$rel/pieces/bin ;\
-	$(CPMAC) -r $(APP)/* $$rel/pieces/bin/ ;\
+	$(CPMAC) -r $(APPTOP)/* $$rel/pieces/bin/ ;\
 	$(CPMAC) -r $(MAN) $$rel/pieces/ ;\
 	$(CPMAC) -r $(SOURCEDIST) $$rel ;\
 	cat $(SRC)/install.sh | sed -e "s/__version__/$$ver $$dat/g" > $$rel/install.sh ;\
@@ -170,6 +171,10 @@ $(SOURCEDIST) : $(BUILD)
 $(APP) : $(BUILD)
 	$(E) Making $(APP) Directory
 	@mkdir -p $(APP)
+
+$(APPTOP) : $(BUILD)
+	$(E) Making $(APPTOP) Directory
+	@mkdir -p $(APPTOP)
 
 $(OBJ) : $(BUILD)
 	$(E) Making $(OBJ) Directory
@@ -257,7 +262,11 @@ $(APP)/% : $(OBJ)/%.o $(UTILS_OBJECTS)
 	$(E) Linking $@
 	@gcc $(GCCOPTS) $< $(UTILS_OBJECTS) $(LIBS) -g -o $@
 	$(E) Rezzing $@
-	@echo "data 'carb' (0) { };" | $(REZ) -a -o $@
+	$(REZ) -a -o $@ $(SRC)/carb.r
+	$(E) Making dorky cmd-line linkover...
+	echo "\`dirname $$""0\`/qt_tools.app/Contents/MacOS/$* $$""@" > $(APPTOP)/$*
+	@chmod uga+x $(APPTOP)/$*
+
 
 # These are just target aliases with no action
 qt_atom : $(APP)/qt_atom

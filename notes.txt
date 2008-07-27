@@ -1,0 +1,8 @@
+
+2008.07.26 -- saturday night -- Dialogs were getting "stuck behind" again, on latest Mac OS X, Leopard.
+By random experiments, I found the fix is to make sure the executable lives inside folders called Contents/MacOS/.
+It is crazy but true.
+
+Also, Rez was complaining about my stdin sourcing for carb, so I added carb.r to the build.
+
+
