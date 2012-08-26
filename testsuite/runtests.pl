@@ -99,7 +99,7 @@ sub getQTInfo($)
 	my %result;
 	my $fileName = shift;
 
-	my $qtInfoCmd = "$appsLoc/qt_info $fileName";
+	my $qtInfoCmd = "$appsLoc/qt_info \"$fileName\"";
 	my $result = snagParseableOutput($qtInfoCmd);
 	my $assnCount = scalar(keys(%$result));
     print "qt_info on $fileName got $assnCount values, dur=$$result{movie_duration}\n";
@@ -226,6 +226,16 @@ sub testQtInfo
     assertEquals("movie_track_count",2,$$qtInfo{movie_track_count});
 
     assertEquals("media_average_sample_rate",60,$$qtInfo{2}{media_average_sample_rate});
+}
+
+sub testWithSpace
+{
+    # just make sure some file with spaces can be found by a tool.
+    print "test With Space\n";
+	my $srcImgName = "clock2 with space.jpg";
+	assertFileExists($srcImgName);
+    my $qtInfo = getQTInfo($srcImgName);
+	assertEq("movie_box","(0,0,200,188)",$$qtInfo{movie_box});
 }
 
 sub test1
@@ -471,6 +481,7 @@ sub main(@)
 	else
 	{	
 		testHaveTools();
+        testWithSpace();
 		testQtInfo();
         testManPages();
         testM4aAudioOnly();

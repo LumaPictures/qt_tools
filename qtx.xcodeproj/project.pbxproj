@@ -192,9 +192,11 @@
 		EECAF8040ABBD23500DB981D /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = EECAF8050ABBD23500DB981D /* Build configuration list for PBXProject "qtx" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 0;
 			mainGroup = EECAF8020ABBD23500DB981D;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				EECAF8120ABBD25E00DB981D /* make */,
 				EE33782F0D0C486F00853941 /* make i386 */,
