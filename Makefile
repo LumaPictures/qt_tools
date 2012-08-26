@@ -44,8 +44,15 @@ GCCOPTS = $(ARCHS) # -gfull  (for debugging)
 # where things come from...
 SRC = ./src
 TOOLS = ./tools
-REZ = /Developer/Tools/Rez
-CPMAC = /Developer/Tools/CpMac
+
+# This is where Xcode or the old tools are installed.
+# Later (10.7 ish) versions of Xcode include everything inside 
+# the app bundle. Which is very tidy. Actually. dvb12.
+
+XCODETOOLS = /Applications/Xcode.app/Contents
+
+REZ = $(XCODETOOLS)/Developer/Tools/Rez
+CPMAC = $(XCODETOOLS)/Developer/Tools/CpMac
 
 
 # where things go to.

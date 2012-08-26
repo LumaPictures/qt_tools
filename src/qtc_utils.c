@@ -618,8 +618,15 @@ void GoGrey(int grey) // 0..255
 }
 void GoBW()
 {
-	ForeColor(blackColor);
-	BackColor(whiteColor);
+    // In the long story of gradual deprecation,
+    // somewhere, they've taken blackColor and whiteColor
+    // away. Probably a switch. But here, I just declar them. Ok.
+#define oldBlackColor 33
+#define oldWhiteColor 30
+	ForeColor(oldBlackColor);
+	BackColor(oldWhiteColor);
+//	ForeColor(blackColor);
+//	BackColor(whiteColor);
 }
 
 // +----------------------------------------------

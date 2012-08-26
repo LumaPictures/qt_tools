@@ -454,7 +454,7 @@ sub main(@)
     print "{options --apps=<qt_tools> --keep (wont delete test results)}\n";
     print "\n\n\n";
     print "QT_TOOLS AUTOMATED TESTS\n";
-    system(date);
+    system("date");
     sys("qt_export --version",1);
     print "\n\n\n";
 
