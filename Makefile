@@ -34,7 +34,9 @@ LIBS = \
 # | can redefine ARCHS to be "-arch ppc" to do that.
 # | dvb 2007.12.08
 # |
-ARCHS = -arch ppc -arch i386
+# | No more ppc. 2012.08.25
+#ARCHS = -arch ppc -arch i386
+ARCHS = -arch i386
 
 GCCOPTS = $(ARCHS) # -gfull  (for debugging)
 
@@ -264,7 +266,7 @@ $(APP)/% : $(OBJ)/%.o $(UTILS_OBJECTS)
 	$(E) Rezzing $@
 	$(REZ) -a -o $@ $(SRC)/carb.r
 	$(E) Making dorky cmd-line linkover...
-	echo "\`dirname $$""0\`/qt_tools.app/Contents/MacOS/$* $$""@" > $(APPTOP)/$*
+	echo "\`dirname $$""0\`/qt_tools.app/Contents/MacOS/$* \"$$""@\"" > $(APPTOP)/$*
 	@chmod uga+x $(APPTOP)/$*
 
 
